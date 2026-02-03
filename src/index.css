@@ -47,11 +47,13 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-background text-foreground font-body;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    @apply font-body;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -60,7 +62,8 @@
   h3,
   h4,
   .font-display {
-    @apply font-display uppercase tracking-wider;
+    @apply uppercase tracking-wider;
+    font-family: 'Bebas Neue', cursive;
   }
 }
 
