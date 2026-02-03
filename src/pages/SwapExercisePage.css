@@ -1,0 +1,170 @@
+.swap-screen {
+    padding-bottom: 100px !important;
+}
+
+.swap-header {
+    margin-bottom: var(--space-md);
+}
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.swap-title {
+    font-size: 24px;
+}
+
+.search-container {
+    margin: var(--space-md) 0;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background-color: var(--bg-tertiary);
+    padding: 0 var(--space-md);
+    border-radius: var(--radius-full);
+    border: 1px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.search-box:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 0;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    box-shadow: none;
+}
+
+.swap-tabs {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.swap-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.swap-tab-btn.active {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.swap-section {
+    margin-bottom: var(--space-xl);
+}
+
+.exercise-alt-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.alt-exercise-card {
+    padding: var(--space-sm) !important;
+}
+
+.alt-ex-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.alt-ex-img {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    background-color: var(--bg-tertiary);
+}
+
+.alt-ex-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.muscle-groups-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.muscle-group-card {
+    padding: var(--space-sm) !important;
+}
+
+.muscle-group-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.muscle-group-img-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-tertiary);
+}
+
+.muscle-group-info {
+    flex: 1;
+}
+
+.muscle-group-name {
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.muscle-group-count {
+    font-size: 12px;
+}
+
+.swap-footer {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+    z-index: 50;
+}
+
+.create-custom-btn {
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}

@@ -1,0 +1,194 @@
+.active-workout-screen {
+    padding-bottom: 20px !important;
+    /* No bottom nav here usually, or keep it */
+}
+
+.active-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.active-header-title {
+    text-align: center;
+}
+
+.workout-name-header {
+    font-size: 20px;
+    margin-top: -2px;
+}
+
+.finish-btn {
+    background-color: var(--accent-subtle) !important;
+    color: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    font-weight: 700 !important;
+}
+
+.active-progress-section {
+    margin-bottom: var(--space-lg);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease-out;
+}
+
+.active-exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.superset-container {
+    border: 1px solid rgba(0, 255, 102, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    background-color: rgba(0, 255, 102, 0.02);
+}
+
+.superset-header {
+    margin-bottom: var(--space-md);
+}
+
+.active-superset {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.active-ex-item {
+    margin-bottom: var(--space-xl);
+}
+
+.active-ex-item:last-child {
+    margin-bottom: 0;
+}
+
+.active-ex-header {
+    margin-bottom: var(--space-sm);
+}
+
+.ex-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.active-ex-name {
+    font-size: 14px;
+    font-weight: 600;
+    max-width: 80%;
+}
+
+.add-notes-btn {
+    font-size: 11px !important;
+    padding: 0 !important;
+    color: var(--text-muted) !important;
+}
+
+.set-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: var(--space-md) 0;
+}
+
+.set-table-header {
+    display: grid;
+    grid-template-columns: 40px 1fr 60px 60px 40px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    padding: 0 4px;
+}
+
+.set-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 60px 60px 40px;
+    align-items: center;
+    text-align: center;
+    background-color: var(--bg-tertiary);
+    padding: 8px 4px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.set-row.completed {
+    background-color: var(--bg-secondary);
+    border-color: var(--accent-subtle);
+}
+
+.set-number {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.set-prev {
+    font-size: 11px;
+}
+
+.set-input {
+    width: 50px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--text-muted);
+    border-radius: 4px;
+    padding: 4px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.set-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.effort-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--text-muted);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.set-row.completed .effort-circle {
+    border-color: var(--accent-primary);
+}
+
+.ex-actions {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.ex-actions button {
+    flex: 1;
+    font-size: 12px !important;
+    padding: 8px !important;
+}
+
+.mr-1 {
+    margin-right: 4px;
+}

@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 144 100% 50%;
+    /* Electric Green #00ff66 */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 144 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom Fitness Tokens */
+    --accent-glow: rgba(0, 255, 102, 0.3);
+    --accent-subtle: rgba(0, 255, 102, 0.1);
+    --effort-easy: #22c55e;
+    --effort-ideal: #eab308;
+    --effort-max: #ef4444;
+    --pr-gold: #ffd700;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    @apply font-display uppercase tracking-wider;
+  }
+}
+
+/* Custom Utils */
+.glow {
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.accent-text {
+  color: hsl(var(--primary));
+}
+
+.accent-bg {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.secondary-text {
+  @apply text-muted-foreground;
+}
+
+.muted-text {
+  @apply text-muted-foreground/60;
+}
+
+.screen {
+  @apply min-h-screen p-4 pb-32 max-w-[480px] mx-auto w-full;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 99px;
+}
+
+/* App transition container */
+.app-container {
+  @apply flex flex-col min-h-screen relative;
+}
