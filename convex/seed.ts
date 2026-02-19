@@ -61,7 +61,7 @@ export const seedDatabase = mutation({
             programId: programId,
             name: "Workout A",
             weekNumber: 1,
-            dayOfWeek: "MON",
+            dayOfWeek: "FRI",
             exercises: [], // Will populate below
         });
 

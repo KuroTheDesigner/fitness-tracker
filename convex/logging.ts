@@ -9,7 +9,7 @@ export const logSet = mutation({
         setNumber: v.number(),
         weight: v.number(),
         reps: v.number(),
-        effortLevel: v.string(),
+        effortLevel: v.optional(v.string()), // 'easy', 'ideal', 'max', 'NORMAL'
     },
     handler: async (ctx, args) => {
         // 1. Check for PR
