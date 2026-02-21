@@ -7,6 +7,17 @@ export const getAllExercises = query({
     },
 });
 
+export const getExercisesByFocus = query({
+    args: { targetMuscle: v.string(), emphasizedFocus: v.optional(v.string()) },
+    handler: async (ctx, args) => {
+        let allExercises = await ctx.db.query("exercises").collect();
+        return allExercises.filter(ex =>
+            ex.primary_muscle === args.targetMuscle &&
+            (args.emphasizedFocus ? ex.emphasized_focus === args.emphasizedFocus : true)
+        );
+    },
+});
+
 export const searchExercises = query({
     args: { query: v.string() },
     handler: async (ctx, args) => {

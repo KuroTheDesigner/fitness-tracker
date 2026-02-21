@@ -55,3 +55,36 @@ export const getExerciseHistory = query({
             .take(10);
     },
 });
+
+export const getPreviousSessionContext = query({
+    args: { userId: v.id("users"), exerciseIds: v.array(v.id("exercises")) },
+    handler: async (ctx, args) => {
+        const results: Record<string, any[]> = {};
+        for (const exId of args.exerciseIds) {
+            const mostRecentSet = await ctx.db
+                .query("setHistory")
+                .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+                .filter((q) => q.eq(q.field("exerciseId"), exId))
+                .order("desc")
+                .first();
+
+            if (mostRecentSet) {
+                const sessionSets = await ctx.db
+                    .query("setHistory")
+                    .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+                    .filter((q) =>
+                        q.and(
+                            q.eq(q.field("exerciseId"), exId),
+                            q.eq(q.field("workoutHistoryId"), mostRecentSet.workoutHistoryId)
+                        )
+                    )
+                    .collect();
+
+                results[exId] = sessionSets.sort((a, b) => a.setNumber - b.setNumber);
+            } else {
+                results[exId] = [];
+            }
+        }
+        return results;
+    },
+});

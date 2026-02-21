@@ -54,33 +54,24 @@ export const getWeeklyActivity = query({
 export const getMuscleBreakdown = query({
     args: { userId: v.id("users") },
     handler: async (ctx, args) => {
-        // Get recent set history
+        // Fetch sets from the past 7 days up to 100 sets max
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
         const recentSets = await ctx.db
             .query("setHistory")
             .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+            .filter((q) => q.gte(q.field("completedAt"), oneWeekAgo))
             .order("desc")
-            .take(50);
+            .take(100);
 
-        // Count by muscle group
-        const muscleCount = {};
+        // Attach full exercise object to allow Volume Math primary/secondary parsing
+        const enrichedSets = await Promise.all(
+            recentSets.map(async (set) => {
+                const exercise = await ctx.db.get(set.exerciseId);
+                return { ...set, exercise };
+            })
+        );
 
-        for (const set of recentSets) {
-            const exercise = await ctx.db.get(set.exerciseId);
-            if (exercise?.muscleGroups) {
-                exercise.muscleGroups.forEach(muscle => {
-                    muscleCount[muscle] = (muscleCount[muscle] || 0) + 1;
-                });
-            }
-        }
-
-        const total = Object.values(muscleCount).reduce((a, b) => a + b, 0) || 1;
-
-        return Object.entries(muscleCount)
-            .map(([name, count]) => ({
-                name,
-                percent: Math.round((count / total) * 100),
-            }))
-            .sort((a, b) => b.percent - a.percent);
+        return enrichedSets;
     },
 });
 

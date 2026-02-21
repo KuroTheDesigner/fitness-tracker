@@ -31,6 +31,9 @@ export default defineSchema({
     exercises: defineTable({
         name: v.string(),
         muscleGroups: v.array(v.string()),
+        primary_muscle: v.optional(v.string()), // Target Muscle
+        secondary_muscles: v.optional(v.array(v.string())), // Collateral muscles 
+        emphasized_focus: v.optional(v.string()), // Specific part of muscle (e.g. Upper Chest)
         equipment: v.optional(v.string()),
         youtubeUrl: v.optional(v.string()),
         thumbnailUrl: v.optional(v.string()),
@@ -61,10 +64,11 @@ export default defineSchema({
 
     setHistory: defineTable({
         userId: v.id("users"),
-        workoutHistoryId: v.id("workoutHistory"),
+        workoutHistoryId: v.optional(v.id("workoutHistory")),
         workoutExerciseId: v.id("workoutExercises"),
         exerciseId: v.id("exercises"),
         setNumber: v.number(),
+        setId: v.optional(v.string()), // Format: '1A', '1B' for supersets
         weight: v.optional(v.number()),
         reps: v.number(),
         effortLevel: v.optional(v.string()),

@@ -62,50 +62,39 @@ const HomePage = ({ userId, onStartWorkout }) => {
 
     return (
         <div className="screen animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex justify-between items-center py-4 mb-4">
-                <div className="flex flex-col">
-                    <span className="text-xs font-semibold secondary-text uppercase tracking-wider">
-                        {program?.description || 'Your Program'}
-                    </span>
-                    <h2 className="text-3xl font-display leading-tight">
-                        {program?.name || 'Workout Plan'}
-                    </h2>
-                </div>
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted/50">
-                    <User size={20} />
-                </Button>
-            </header>
-
-            {/* Today's Workout Card */}
-            <Card className="relative overflow-hidden h-[200px] border-none glow mb-8">
-                <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 to-transparent p-6 flex flex-col justify-center">
+            {/* Edge-to-Edge Hero Card */}
+            <div className="relative overflow-hidden h-[300px] border-none -mx-6 mb-8 bg-background shadow-[0_10px_40px_rgba(0,255,102,0.05)] border-b border-primary/20">
+                <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/90 to-background/10 p-8 flex flex-col justify-end pb-10">
                     {todaysWorkout ? (
-                        <>
-                            <span className="text-sm font-bold accent-text uppercase tracking-widest mb-1">Today's Workout</span>
-                            <h1 className="text-4xl font-display mb-4">{todaysWorkout.activity}</h1>
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-700 delay-150">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                <span className="text-[10px] font-black accent-text uppercase tracking-widest">Today's Protocol</span>
+                            </div>
+                            <h1 className="text-[40px] font-display leading-[0.9] tracking-tighter mb-6 uppercase drop-shadow-[0_0_10px_rgba(0,255,102,0.3)]">{todaysWorkout.activity}</h1>
                             <Button
                                 size="lg"
-                                className="w-fit gap-2 font-bold"
+                                className="w-fit h-12 px-6 gap-3 font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,255,102,0.2)]"
                                 onClick={() => onStartWorkout(todaysWorkout.workoutId, todaysWorkout.activity)}
                             >
-                                <Play size={18} fill="currentColor" />
-                                GET STARTED
+                                <Play size={16} fill="currentColor" />
+                                INITIALIZE
                             </Button>
-                        </>
+                        </div>
                     ) : (
-                        <>
-                            <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Today</span>
-                            <h1 className="text-4xl font-display mb-4">Rest Day</h1>
-                            <p className="text-muted-foreground text-sm">Recovery is part of progress. See you tomorrow!</p>
-                        </>
+                        <div className="animate-in fade-in slide-in-from-left-4 duration-700 delay-150">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 block">Today</span>
+                            <h1 className="text-5xl font-display mb-4 uppercase text-muted-foreground/50 tracking-tighter">Rest Day</h1>
+                            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">System Repair Sequence</p>
+                        </div>
                     )}
                 </div>
                 <img
-                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=300&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1000&auto=format&fit=crop"
                     alt="Athlete"
-                    className="absolute right-0 top-0 h-full w-1/2 object-cover grayscale opacity-60"
+                    className="absolute right-0 top-0 h-full w-[80%] object-cover grayscale opacity-40 mix-blend-screen [mask-image:linear-gradient(to_left,black_20%,transparent_100%)]"
                 />
-            </Card>
+            </div>
 
             {/* Weekly Schedule Section */}
             <section className="mb-8">

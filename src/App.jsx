@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Play } from 'lucide-react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../convex/_generated/api';
 import HomePage from './pages/HomePage';
@@ -173,6 +174,21 @@ function App() {
       <main className="flex-1 w-full max-w-[480px] px-6 pb-24 relative">
         <AnimatePresence mode="wait">
           {renderView()}
+        </AnimatePresence>
+
+        {/* Global Active Workout Floating Button */}
+        <AnimatePresence>
+          {selectedWorkoutId && currentView !== 'active-workout' && currentView !== 'workout-summary' && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              onClick={() => setCurrentView('active-workout')}
+              className="fixed bottom-[100px] right-6 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(0,255,102,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+            >
+              <Play size={24} fill="currentColor" className="ml-1" />
+            </motion.button>
+          )}
         </AnimatePresence>
       </main>
 
