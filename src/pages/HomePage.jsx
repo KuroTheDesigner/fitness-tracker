@@ -2,13 +2,15 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Settings, User } from 'lucide-react';
+import { Play, Settings, User, LogOut } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkout';
+import { signOut } from '@/shoo';
 
 const DAYS_OF_WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 const HomePage = ({ userId, onStartWorkout }) => {
     const { program, schedule, isLoading } = useWorkout(userId);
+
 
     // Get current day of week
     const today = DAYS_OF_WEEK[new Date().getDay()];
@@ -100,8 +102,8 @@ const HomePage = ({ userId, onStartWorkout }) => {
             <section className="mb-8">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-display">This Week's Schedule</h3>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground">
-                        <Settings size={18} />
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-500 transition-colors" onClick={signOut}>
+                        <LogOut size={18} />
                     </Button>
                 </div>
 

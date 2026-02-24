@@ -1,15 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
+import { useAuth } from "./shoo";
 import './index.css'
 import App from './App.jsx'
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL || "https://happy-animal-123.convex.cloud");
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ConvexProvider client={convex}>
+    <ConvexProviderWithAuth client={convex} useAuth={useAuth}>
       <App />
-    </ConvexProvider>
+    </ConvexProviderWithAuth>
   </StrictMode>,
 )

@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Play } from 'lucide-react';
-import { useQuery, useMutation } from 'convex/react';
+import { Play, LogOut } from 'lucide-react';
+import { useQuery, useMutation, useConvexAuth } from 'convex/react';
 import { api } from '../convex/_generated/api';
+import { signOut } from './shoo';
 import HomePage from './pages/HomePage';
 import WorkoutSummaryPage from './pages/WorkoutSummaryPage';
 import ActiveWorkoutPage from './pages/ActiveWorkoutPage';
 import ProgressPage from './pages/ProgressPage';
 import ExerciseDetailPage from './pages/ExerciseDetailPage';
 import SwapExercisePage from './pages/SwapExercisePage';
+import AuthPage from './pages/AuthPage';
 import BottomNav from './components/layout/BottomNav';
 import './index.css';
 
@@ -19,11 +21,21 @@ function App() {
   const [selectedWorkoutName, setSelectedWorkoutName] = useState('');
   const [selectedExercise, setSelectedExercise] = useState(null);
 
-  // Get user by clerkId (temporary hardcoded for demo)
-  const user = useQuery(api.users.getByClerkId, { clerkId: "user_123" });
+  const { isAuthenticated, isLoading } = useConvexAuth();
+
+  // Get current active user from convex DB natively
+  const user = useQuery(api.users.current);
   const userId = user?._id;
 
   const swapExercise = useMutation(api.exercises.swapExercise);
+  const ensureUser = useMutation(api.users.ensureUser);
+
+  // Auto-create user record on first sign-in
+  useEffect(() => {
+    if (isAuthenticated && user === null) {
+      ensureUser();
+    }
+  }, [isAuthenticated, user]);
 
   const handleStartWorkout = (workoutId, workoutName) => {
     setSelectedWorkoutId(workoutId);
@@ -42,6 +54,9 @@ function App() {
   };
 
   const renderView = () => {
+    if (isLoading) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Initializing System...</div>;
+    if (!isAuthenticated) return <AuthPage />;
+
     switch (currentView) {
       case 'home':
         return (
@@ -171,6 +186,16 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center overflow-x-hidden">
+      {/* Always-visible sign-out button */}
+      {isAuthenticated && (
+        <button
+          onClick={signOut}
+          className="fixed top-4 right-4 z-[100] w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-red-500 hover:border-red-500/50 transition-all"
+          title="Sign Out"
+        >
+          <LogOut size={16} />
+        </button>
+      )}
       <main className="flex-1 w-full max-w-[480px] px-6 pb-24 relative">
         <AnimatePresence mode="wait">
           {renderView()}

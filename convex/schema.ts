@@ -3,14 +3,14 @@ import { v } from "convex/values";
 
 export default defineSchema({
     users: defineTable({
-        clerkId: v.string(),
-        name: v.string(),
-        email: v.string(),
-        currentStreak: v.number(),
-        longestStreak: v.number(),
+        shooSubject: v.optional(v.string()), // pairwise_sub from Shoo (Google identity)
+        name: v.optional(v.string()),
+        email: v.optional(v.string()),
+        currentStreak: v.optional(v.number()),
+        longestStreak: v.optional(v.number()),
         lastWorkoutDate: v.optional(v.string()), // ISO date string
-        createdAt: v.number(),
-    }).index("by_clerkId", ["clerkId"]),
+        createdAt: v.optional(v.number()),
+    }).index("by_shooSubject", ["shooSubject"]),
 
     programs: defineTable({
         name: v.string(),
@@ -85,4 +85,4 @@ export default defineSchema({
         achievedAt: v.number(),
         setHistoryId: v.id("setHistory"),
     }).index("by_userId_exerciseId", ["userId", "exerciseId"]),
-});
+}, { schemaValidation: false });
