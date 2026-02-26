@@ -15,6 +15,7 @@ import BottomNav from './components/layout/BottomNav';
 import './index.css';
 
 function App() {
+  const MotionDiv = motion.div;
   const [activeTab, setActiveTab] = useState('workout');
   const [currentView, setCurrentView] = useState('home');
   const [selectedWorkoutId, setSelectedWorkoutId] = useState(null);
@@ -35,7 +36,7 @@ function App() {
     if (isAuthenticated && user === null) {
       ensureUser();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, ensureUser]);
 
   const handleStartWorkout = (workoutId, workoutName) => {
     setSelectedWorkoutId(workoutId);
@@ -60,7 +61,7 @@ function App() {
     switch (currentView) {
       case 'home':
         return (
-          <motion.div
+          <MotionDiv
             key="home"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -71,11 +72,11 @@ function App() {
               userId={userId}
               onStartWorkout={handleStartWorkout}
             />
-          </motion.div>
+          </MotionDiv>
         );
       case 'workout-summary':
         return (
-          <motion.div
+          <MotionDiv
             key="summary"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -89,11 +90,11 @@ function App() {
               onStart={() => setCurrentView('active-workout')}
               onViewExercise={handleViewExercise}
             />
-          </motion.div>
+          </MotionDiv>
         );
       case 'active-workout':
         return (
-          <motion.div
+          <MotionDiv
             key="active"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -109,11 +110,11 @@ function App() {
               onViewExercise={handleViewExercise}
               onSwapExercise={handleSwapExercise}
             />
-          </motion.div>
+          </MotionDiv>
         );
       case 'exercise-detail':
         return (
-          <motion.div
+          <MotionDiv
             key="exercise-detail"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -132,11 +133,11 @@ function App() {
                 }
               }}
             />
-          </motion.div>
+          </MotionDiv>
         );
       case 'swap-exercise':
         return (
-          <motion.div
+          <MotionDiv
             key="swap-exercise"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -156,11 +157,11 @@ function App() {
                 }
               }}
             />
-          </motion.div>
+          </MotionDiv>
         );
       case 'progress':
         return (
-          <motion.div
+          <MotionDiv
             key="progress"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -168,18 +169,18 @@ function App() {
             transition={{ duration: 0.3 }}
           >
             <ProgressPage userId={userId} />
-          </motion.div>
+          </MotionDiv>
         );
       default:
         return (
-          <motion.div
+          <MotionDiv
             key="empty"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="screen flex items-center justify-center"
           >
             <h1 className="text-2xl opacity-20">Coming Soon</h1>
-          </motion.div>
+          </MotionDiv>
         );
     }
   };

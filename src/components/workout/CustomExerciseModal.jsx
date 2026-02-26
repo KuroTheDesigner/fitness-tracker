@@ -11,6 +11,7 @@ const PREDEFINED_MUSCLE_GROUPS = [
 ];
 
 const CustomExerciseModal = ({ isOpen, onClose, userId, onExerciseCreated }) => {
+    const MotionDiv = motion.div;
     const createCustomExercise = useMutation(api.exercises.createCustomExercise);
 
     const [name, setName] = useState('');
@@ -77,7 +78,7 @@ const CustomExerciseModal = ({ isOpen, onClose, userId, onExerciseCreated }) => 
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4 pb-20 sm:pb-4">
-                <motion.div
+                <MotionDiv
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -85,7 +86,7 @@ const CustomExerciseModal = ({ isOpen, onClose, userId, onExerciseCreated }) => 
                     className="absolute inset-0 bg-background/80 backdrop-blur-sm"
                 />
 
-                <motion.div
+                <MotionDiv
                     initial={{ opacity: 0, y: "100%", scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: "100%", scale: 0.95 }}
@@ -174,7 +175,7 @@ const CustomExerciseModal = ({ isOpen, onClose, userId, onExerciseCreated }) => 
                             {isSubmitting ? 'CREATING...' : 'SAVE EXERCISE'}
                         </Button>
                     </div>
-                </motion.div>
+                </MotionDiv>
             </div>
         </AnimatePresence>
     );

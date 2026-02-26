@@ -23,7 +23,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
     const finishWorkout = useMutation(api.logging.finishWorkout);
 
     // Timer and UI State
-    const [startTime] = useState(Date.now());
+    const [startTime] = useState(() => Date.now());
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [activeRestTimer, setActiveRestTimer] = useState(null); // { seconds: number }
     const [showEffortRating, setShowEffortRating] = useState(null); // { we: object, setIndex: number, weight: number, reps: number }
@@ -46,35 +46,39 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
     // Initialize set tracking state from workout data
     const [setsState, setSetsState] = useState({});
 
-    useEffect(() => {
-        if (workout?.exercises) {
-            const initialState = {};
-            workout.exercises.forEach(we => {
-                for (let i = 0; i < we.targetSets; i++) {
-                    const setKey = `${we._id}-${i}`;
-                    initialState[setKey] = {
-                        weight: '',
-                        reps: '',
-                        completed: false,
-                        isPR: false,
-                    };
-                }
-            });
-            setSetsState(initialState);
-        }
+    const baseSetsState = useMemo(() => {
+        if (!workout?.exercises) return {};
+        const initialState = {};
+        workout.exercises.forEach(we => {
+            for (let i = 0; i < we.targetSets; i++) {
+                const setKey = `${we._id}-${i}`;
+                initialState[setKey] = {
+                    weight: '',
+                    reps: '',
+                    completed: false,
+                    isPR: false,
+                };
+            }
+        });
+        return initialState;
     }, [workout]);
+
+    const resolvedSetsState = useMemo(() => ({
+        ...baseSetsState,
+        ...setsState,
+    }), [baseSetsState, setsState]);
 
     // Calculate progress
     const { completedSets, totalSets } = useMemo(() => {
-        const completed = Object.values(setsState).filter(s => s.completed).length;
-        const total = Object.keys(setsState).length;
+        const completed = Object.values(resolvedSetsState).filter(s => s.completed).length;
+        const total = Object.keys(resolvedSetsState).length;
         return { completedSets: completed, totalSets: total || 1 };
-    }, [setsState]);
+    }, [resolvedSetsState]);
 
     // Handle set completion trigger
     const handleSetComplete = (we, setIndex) => {
         const setKey = `${we._id}-${setIndex}`;
-        const currentSet = setsState[setKey];
+        const currentSet = resolvedSetsState[setKey];
 
         if (!currentSet?.completed) {
             const weight = parseFloat(currentSet?.weight) || 0;
@@ -317,7 +321,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
 
                                         {Array.from({ length: we.targetSets }).map((_, idx) => {
                                             const setKey = `${we._id}-${idx}`;
-                                            const setData = setsState[setKey] || { weight: '', reps: '', completed: false, isPR: false };
+                                            const setData = resolvedSetsState[setKey] || { weight: '', reps: '', completed: false, isPR: false };
 
                                             // Handle PR highlighting
                                             const isPR = setData.isPR;

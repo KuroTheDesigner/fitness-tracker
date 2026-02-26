@@ -44,23 +44,24 @@ const RestTimer = ({
 
     // Timer countdown
     useEffect(() => {
-        let interval = null;
+        if (!isRunning || isComplete || seconds <= 0) return;
 
-        if (isRunning && seconds > 0) {
-            interval = setInterval(() => {
-                setSeconds(s => s - 1);
-            }, 1000);
-        } else if (seconds === 0 && !isComplete) {
-            setIsComplete(true);
-            setIsRunning(false);
-            playBeep();
-            onComplete?.();
-        }
+        const interval = setInterval(() => {
+            setSeconds((prevSeconds) => {
+                if (prevSeconds <= 1) {
+                    clearInterval(interval);
+                    setIsRunning(false);
+                    setIsComplete(true);
+                    playBeep();
+                    onComplete?.();
+                    return 0;
+                }
+                return prevSeconds - 1;
+            });
+        }, 1000);
 
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [isRunning, seconds, isComplete, playBeep, onComplete]);
+        return () => clearInterval(interval);
+    }, [isRunning, isComplete, seconds, playBeep, onComplete]);
 
     const formatTime = (totalSeconds) => {
         const mins = Math.floor(totalSeconds / 60);

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
-import { Flame, Trophy, Calendar, TrendingUp } from 'lucide-react';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { Flame, Trophy } from 'lucide-react';
 
 const MUSCLE_COLORS = [
     '#00ff66', // Primary green
@@ -37,13 +37,6 @@ const ProgressPage = ({ userId }) => {
 
     // Format date for PRs
     const formatDate = (timestamp) => {
-        const now = Date.now();
-        const diff = now - timestamp;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-        if (days === 0) return 'Today';
-        if (days === 1) return 'Yesterday';
-        if (days < 7) return `${days} days ago`;
         return new Date(timestamp).toLocaleDateString();
     };
 
