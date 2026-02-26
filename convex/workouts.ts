@@ -222,16 +222,11 @@ export const removeExerciseFromSuperset = mutation({
 
 export const bootstrapOnboardingProgram = mutation({
     args: {
+        userId: v.id("users"),
         preferredWorkoutDays: v.array(v.string()),
     },
     handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity();
-        if (!identity) throw new Error("Not authenticated");
-
-        const user = await ctx.db
-            .query("users")
-            .withIndex("by_shooSubject", (q) => q.eq("shooSubject", identity.subject))
-            .unique();
+        const user = await ctx.db.get(args.userId);
 
         if (!user) throw new Error("User not found");
 
@@ -249,7 +244,7 @@ export const bootstrapOnboardingProgram = mutation({
 
         let program = await ctx.db
             .query("programs")
-            .withIndex("by_userId", (q) => q.eq("userId", user._id))
+            .withIndex("by_userId", (q) => q.eq("userId", args.userId))
             .filter((q) => q.eq(q.field("isActive"), true))
             .unique();
 
@@ -259,7 +254,7 @@ export const bootstrapOnboardingProgram = mutation({
                 description: "Initial plan generated from onboarding day selection.",
                 weeks: 8,
                 isActive: true,
-                userId: user._id,
+                userId: args.userId,
             });
             program = await ctx.db.get(programId);
         }
@@ -334,7 +329,7 @@ export const bootstrapOnboardingProgram = mutation({
         const nextDay = DAY_ORDER[nextIndex];
         const firstUpcoming = createdWorkouts.find((w) => w.dayOfWeek === nextDay) || createdWorkouts[0];
 
-        await ctx.db.patch(user._id, {
+        await ctx.db.patch(args.userId, {
             preferredWorkoutDays: sortedDays,
             onboardingCompleted: false,
         });

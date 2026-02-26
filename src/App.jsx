@@ -49,7 +49,8 @@ function App() {
   }, [isAuthenticated, user, ensureUser]);
 
   const handleOnboardingStartWorkout = async (preferredWorkoutDays) => {
-    const result = await bootstrapOnboardingProgram({ preferredWorkoutDays });
+    if (!userId) throw new Error('User profile not ready. Please try again.');
+    const result = await bootstrapOnboardingProgram({ userId, preferredWorkoutDays });
     if (!result?.workoutId) throw new Error('Could not create first workout.');
 
     setSelectedWorkoutId(result.workoutId);
@@ -62,7 +63,8 @@ function App() {
   };
 
   const handleOnboardingGuideComplete = async () => {
-    await completeOnboarding();
+    if (!userId) throw new Error('User profile not ready. Please try again.');
+    await completeOnboarding({ userId });
     setOnboardingFlowActive(false);
     setActiveTab('dashboard');
     setCurrentView('dashboard');

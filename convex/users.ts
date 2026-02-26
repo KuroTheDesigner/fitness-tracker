@@ -51,19 +51,14 @@ export const getUser = query({
 });
 
 export const completeOnboarding = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const identity = await ctx.auth.getUserIdentity();
-        if (!identity) throw new Error("Not authenticated");
-
-        const user = await ctx.db
-            .query("users")
-            .withIndex("by_shooSubject", (q) => q.eq("shooSubject", identity.subject))
-            .unique();
-
+    args: {
+        userId: v.id("users"),
+    },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.userId);
         if (!user) throw new Error("User not found");
 
-        await ctx.db.patch(user._id, {
+        await ctx.db.patch(args.userId, {
             onboardingCompleted: true,
             onboardingCompletedAt: Date.now(),
         });
