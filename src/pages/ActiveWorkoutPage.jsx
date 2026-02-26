@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Info, MoreVertical, CheckCircle2, Trophy, Clock, Plus, Zap, Timer } from 'lucide-react';
+import { ChevronLeft, Info, MoreVertical, CheckCircle2, Trophy, Clock, Plus, Zap, Timer, Trash2, Link2, X } from 'lucide-react';
 import RestTimer from '@/components/workout/RestTimer';
 import EffortRating from '@/components/workout/EffortRating';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
-const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, onViewExercise, onSwapExercise }) => {
+const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', onBack, onFinish, onViewExercise, onSwapExercise }) => {
     // Fetch workout data
     const workout = useQuery(
         api.workouts.getWorkoutWithExercises,
@@ -21,13 +20,22 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
     // Mutations
     const logSet = useMutation(api.logging.logSet);
     const finishWorkout = useMutation(api.logging.finishWorkout);
+    const removeWorkoutExercise = useMutation(api.workouts.removeWorkoutExercise);
+    const createSuperset = useMutation(api.workouts.createSuperset);
 
     // Timer and UI State
+    const isReadOnly = mode === 'preview' || mode === 'history';
     const [startTime] = useState(() => Date.now());
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [activeRestTimer, setActiveRestTimer] = useState(null); // { seconds: number }
     const [showEffortRating, setShowEffortRating] = useState(null); // { we: object, setIndex: number, weight: number, reps: number }
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+    const [menuExerciseId, setMenuExerciseId] = useState(null);
+    const [pendingRemoval, setPendingRemoval] = useState(null);
+    const [supersetBase, setSupersetBase] = useState(null);
+    const [supersetSelections, setSupersetSelections] = useState([]);
+    const [swipeOffsets, setSwipeOffsets] = useState({});
+    const [activeTouch, setActiveTouch] = useState(null);
 
     // Elapsed timer effect
     useEffect(() => {
@@ -81,6 +89,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
         const currentSet = resolvedSetsState[setKey];
 
         if (!currentSet?.completed) {
+            if (isReadOnly) return;
             const weight = parseFloat(currentSet?.weight) || 0;
             const reps = parseInt(currentSet?.reps) || 0;
 
@@ -108,6 +117,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
 
     // Actually commit the set to database
     const commitSetCompletion = async (we, setIndex, weight, reps, effortLevel, startRest = true) => {
+        if (isReadOnly) return;
         const setKey = `${we._id}-${setIndex}`;
         let isPR = false;
 
@@ -149,6 +159,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
 
     // Handle input changes
     const handleInputChange = (weId, setIndex, field, value) => {
+        if (isReadOnly) return;
         const setKey = `${weId}-${setIndex}`;
         setSetsState(prev => ({
             ...prev,
@@ -178,6 +189,60 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
         onFinish();
     };
 
+    const handleRemoveExercise = async (workoutExerciseId) => {
+        if (!workoutId || !workoutExerciseId || isReadOnly) return;
+        try {
+            await removeWorkoutExercise({ workoutId, workoutExerciseId });
+        } catch (error) {
+            console.error('Failed to remove exercise:', error);
+        } finally {
+            setPendingRemoval(null);
+            setMenuExerciseId(null);
+        }
+    };
+
+    const openSupersetCreator = (exercise) => {
+        setMenuExerciseId(null);
+        setSupersetBase(exercise);
+        setSupersetSelections([]);
+    };
+
+    const handleCreateSuperset = async () => {
+        if (!workoutId || !supersetBase || supersetSelections.length === 0) return;
+        try {
+            await createSuperset({
+                workoutId,
+                baseWorkoutExerciseId: supersetBase._id,
+                workoutExerciseIds: supersetSelections,
+            });
+            setSupersetBase(null);
+            setSupersetSelections([]);
+        } catch (error) {
+            console.error('Failed to create superset:', error);
+        }
+    };
+
+    const startSwipe = (weId, event) => {
+        if (isReadOnly) return;
+        setActiveTouch({ weId, startX: event.touches[0].clientX });
+    };
+
+    const moveSwipe = (event) => {
+        if (!activeTouch) return;
+        const nextDelta = Math.max(-140, Math.min(140, event.touches[0].clientX - activeTouch.startX));
+        setSwipeOffsets((prev) => ({ ...prev, [activeTouch.weId]: nextDelta }));
+    };
+
+    const endSwipe = (exercise) => {
+        if (!activeTouch) return;
+        const offset = swipeOffsets[activeTouch.weId] || 0;
+        if (Math.abs(offset) >= 110) {
+            setPendingRemoval(exercise);
+        }
+        setSwipeOffsets((prev) => ({ ...prev, [activeTouch.weId]: 0 }));
+        setActiveTouch(null);
+    };
+
     // Group exercises by superset
     const groupedExercises = useMemo(() => {
         if (!workout?.exercises) return [];
@@ -201,6 +266,11 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
 
         return groups;
     }, [workout]);
+
+    const supersetCandidates = useMemo(() => {
+        if (!supersetBase || !workout?.exercises) return [];
+        return workout.exercises.filter((we) => we._id !== supersetBase._id && !we.supersetGroup);
+    }, [supersetBase, workout]);
 
     // Loading skeleton
     if (workout === undefined) {
@@ -232,14 +302,19 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                         {formatTime(elapsedSeconds)}
                     </div>
                     <h2 className="text-xl font-display">{workout?.name || workoutName}</h2>
+                    {mode === 'preview' && <div className="text-[10px] font-black uppercase tracking-widest text-primary">Preview Mode</div>}
+                    {mode === 'history' && <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Completed Session</div>}
                 </div>
                 <Button
                     variant="outline"
                     size="sm"
                     className="font-bold border-primary text-primary hover:bg-primary hover:text-primary-foreground h-8"
-                    onClick={() => setShowFinishConfirm(true)}
+                    onClick={() => {
+                        if (isReadOnly) onFinish();
+                        else setShowFinishConfirm(true);
+                    }}
                 >
-                    FINISH
+                    {isReadOnly ? 'CLOSE' : 'FINISH'}
                 </Button>
             </header>
 
@@ -282,6 +357,11 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                         <div className={group.group ? "pt-2" : ""}>
                             {group.exercises.map((we, index) => (
                                 <div key={we._id} className={`${index !== group.exercises.length - 1 ? 'mb-12 pb-8 border-b border-primary/10' : ''}`}>
+                                    <div className="relative mb-4 overflow-hidden rounded-xl">
+                                        <div className="absolute inset-y-0 left-0 w-full bg-red-600/20 border border-red-500/40 rounded-xl flex items-center px-4">
+                                            <Trash2 size={14} className="text-red-300" />
+                                            <span className="ml-2 text-[10px] uppercase tracking-widest font-black text-red-200">Swipe to remove</span>
+                                        </div>
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex-1 pr-4">
                                             <h3 className="text-base font-black uppercase leading-tight tracking-tight mb-1 accent-text">
@@ -302,11 +382,41 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                                     variant="link"
                                                     className="text-[10px] text-primary p-0 h-auto uppercase font-bold ml-2"
                                                     onClick={() => onSwapExercise && onSwapExercise(we)}
+                                                    disabled={isReadOnly}
                                                 >
                                                     Swap
                                                 </Button>
                                             </div>
                                         </div>
+                                        <div className="relative">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => setMenuExerciseId((prev) => (prev === we._id ? null : we._id))}
+                                            >
+                                                <MoreVertical size={16} />
+                                            </Button>
+                                            {menuExerciseId === we._id && !isReadOnly && (
+                                                <div className="absolute right-0 top-10 z-40 w-44 rounded-lg border border-border bg-background shadow-xl p-1">
+                                                    {!we.supersetGroup && (
+                                                        <button
+                                                            className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-secondary flex items-center gap-2"
+                                                            onClick={() => openSupersetCreator(we)}
+                                                        >
+                                                            <Link2 size={14} /> Create Superset
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-red-500/15 text-red-300 flex items-center gap-2"
+                                                        onClick={() => setPendingRemoval(we)}
+                                                    >
+                                                        <Trash2 size={14} /> Remove Exercise
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                     </div>
 
                                     {/* Sets Grid */}
@@ -329,10 +439,14 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                             return (
                                                 <div
                                                     key={idx}
+                                                    onTouchStart={(e) => startSwipe(we._id, e)}
+                                                    onTouchMove={moveSwipe}
+                                                    onTouchEnd={() => endSwipe(we)}
                                                     className={`grid grid-cols-5 gap-2 items-center p-2 rounded-lg transition-all duration-300 ${setData.completed
                                                         ? isPR ? 'bg-[#ffd700]/10 border border-[#ffd700]/30 shadow-[inset_0_0_15px_rgba(255,215,0,0.1)]' : 'bg-primary/10 border border-primary/20'
                                                         : 'bg-background/60 border border-transparent shadow-sm'
                                                         }`}
+                                                    style={{ transform: `translateX(${swipeOffsets[we._id] || 0}px)` }}
                                                 >
                                                     <div className="text-center font-display text-lg flex flex-col items-center justify-center">
                                                         <span className={setData.completed && !isPR ? 'text-primary' : isPR ? 'text-[#ffd700]' : ''}>
@@ -352,7 +466,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                                             ? 'bg-transparent text-foreground'
                                                             : 'bg-muted/50 focus:bg-background focus:ring-1 focus:ring-primary/50'
                                                             }`}
-                                                        disabled={setData.completed}
+                                                        disabled={setData.completed || isReadOnly}
                                                     />
                                                     <Input
                                                         type="number"
@@ -363,7 +477,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                                             ? 'bg-transparent text-foreground'
                                                             : 'bg-muted/50 focus:bg-background focus:ring-1 focus:ring-primary/50'
                                                             }`}
-                                                        disabled={setData.completed}
+                                                        disabled={setData.completed || isReadOnly}
                                                     />
                                                     <div className="flex justify-end pr-1">
                                                         <button
@@ -372,6 +486,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                                                 : 'bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95'
                                                                 }`}
                                                             onClick={() => handleSetComplete(we, idx)}
+                                                            disabled={isReadOnly}
                                                         >
                                                             {setData.completed ? <CheckCircle2 size={18} /> : <div className="w-2 h-2 rounded-full bg-current opacity-30" />}
                                                         </button>
@@ -388,6 +503,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                             size="sm"
                                             className="flex-1 h-9 text-[10px] font-bold tracking-widest uppercase gap-2 bg-background/50 border border-border/50 hover:bg-secondary"
                                             onClick={() => setActiveRestTimer({ seconds: we.restSeconds || 120 })}
+                                            disabled={isReadOnly}
                                         >
                                             <Clock size={14} className="text-primary" /> REST: {Math.floor((we.restSeconds || 120) / 60)}:{(we.restSeconds || 120) % 60 === 0 ? '00' : (we.restSeconds || 120) % 60}
                                         </Button>
@@ -395,6 +511,7 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                                             variant="secondary"
                                             size="sm"
                                             className="flex-1 h-9 text-[10px] font-bold tracking-widest uppercase gap-2 bg-background/50 border border-border/50 hover:bg-secondary"
+                                            disabled={isReadOnly}
                                         >
                                             <Plus size={14} className="text-primary" /> ADD SET
                                         </Button>
@@ -442,6 +559,50 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, onBack, onFinish, o
                     <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Time</div>
                 </div>
             </ConfirmDialog>
+
+            <ConfirmDialog
+                isOpen={!!pendingRemoval}
+                onClose={() => setPendingRemoval(null)}
+                onConfirm={() => pendingRemoval && handleRemoveExercise(pendingRemoval._id)}
+                title="Remove Exercise?"
+                description="This will remove the exercise from the current workout session."
+                confirmLabel="Remove"
+                cancelLabel="Cancel"
+                variant="danger"
+            />
+
+            {supersetBase && (
+                <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-6 flex items-end sm:items-center justify-center">
+                    <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5">
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-widest font-black text-primary">Create Superset</p>
+                                <h3 className="text-lg font-display">{supersetBase.exercise?.name}</h3>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSupersetBase(null)}><X size={14} /></Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">Select one or more exercises to pair in this superset.</p>
+                        <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
+                            {supersetCandidates.map((candidate) => {
+                                const isSelected = supersetSelections.includes(candidate._id);
+                                return (
+                                    <button
+                                        key={candidate._id}
+                                        className={`w-full text-left rounded-lg border px-3 py-2 text-sm font-bold uppercase tracking-tight ${isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/30'}`}
+                                        onClick={() => setSupersetSelections((prev) => isSelected ? prev.filter((id) => id !== candidate._id) : [...prev, candidate._id])}
+                                    >
+                                        {candidate.exercise?.name || 'Unknown Exercise'}
+                                    </button>
+                                );
+                            })}
+                            {supersetCandidates.length === 0 && (
+                                <p className="text-xs text-muted-foreground py-3 text-center">No eligible exercises available.</p>
+                            )}
+                        </div>
+                        <Button className="w-full" disabled={supersetSelections.length === 0} onClick={handleCreateSuperset}>Confirm Superset</Button>
+                    </div>
+                </div>
+            )}
 
         </div>
     );

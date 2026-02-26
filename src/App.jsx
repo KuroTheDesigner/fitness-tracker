@@ -11,6 +11,10 @@ import ProgressPage from './pages/ProgressPage';
 import ExerciseDetailPage from './pages/ExerciseDetailPage';
 import SwapExercisePage from './pages/SwapExercisePage';
 import AuthPage from './pages/AuthPage';
+import NutritionPage from './pages/NutritionPage';
+import LessonsPage from './pages/LessonsPage';
+import AccountPage from './pages/AccountPage';
+import DashboardPage from './pages/DashboardPage';
 import BottomNav from './components/layout/BottomNav';
 import './index.css';
 
@@ -21,6 +25,8 @@ function App() {
   const [selectedWorkoutId, setSelectedWorkoutId] = useState(null);
   const [selectedWorkoutName, setSelectedWorkoutName] = useState('');
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedDayStatus, setSelectedDayStatus] = useState('current');
+  const [selectedWorkoutCompleted, setSelectedWorkoutCompleted] = useState(false);
 
   const { isAuthenticated, isLoading } = useConvexAuth();
 
@@ -38,9 +44,17 @@ function App() {
     }
   }, [isAuthenticated, user, ensureUser]);
 
-  const handleStartWorkout = (workoutId, workoutName) => {
+  const handleOpenWorkout = ({ workoutId, workoutName, dayStatus, isCompleted }) => {
     setSelectedWorkoutId(workoutId);
     setSelectedWorkoutName(workoutName);
+    setSelectedDayStatus(dayStatus || 'current');
+    setSelectedWorkoutCompleted(!!isCompleted);
+
+    if (dayStatus === 'current') {
+      setCurrentView('active-workout');
+      return;
+    }
+
     setCurrentView('workout-summary');
   };
 
@@ -70,7 +84,7 @@ function App() {
           >
             <HomePage
               userId={userId}
-              onStartWorkout={handleStartWorkout}
+              onOpenWorkout={handleOpenWorkout}
             />
           </MotionDiv>
         );
@@ -86,6 +100,8 @@ function App() {
             <WorkoutSummaryPage
               workoutId={selectedWorkoutId}
               workoutName={selectedWorkoutName}
+              dayStatus={selectedDayStatus}
+              isCompleted={selectedWorkoutCompleted}
               onBack={() => setCurrentView('home')}
               onStart={() => setCurrentView('active-workout')}
               onViewExercise={handleViewExercise}
@@ -105,8 +121,15 @@ function App() {
               userId={userId}
               workoutId={selectedWorkoutId}
               workoutName={selectedWorkoutName}
-              onBack={() => setCurrentView('workout-summary')}
-              onFinish={() => setCurrentView('home')}
+              mode={selectedDayStatus === 'future' ? 'preview' : (selectedWorkoutCompleted ? 'history' : 'active')}
+              onBack={() => setCurrentView(selectedDayStatus === 'current' ? 'home' : 'workout-summary')}
+              onFinish={() => {
+                if (selectedDayStatus === 'current') {
+                  setSelectedWorkoutCompleted(true);
+                  setSelectedDayStatus('past');
+                }
+                setCurrentView('workout-summary');
+              }}
               onViewExercise={handleViewExercise}
               onSwapExercise={handleSwapExercise}
             />
@@ -171,6 +194,30 @@ function App() {
             <ProgressPage userId={userId} />
           </MotionDiv>
         );
+      case 'nutrition':
+        return (
+          <MotionDiv key="nutrition" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <NutritionPage />
+          </MotionDiv>
+        );
+      case 'lessons':
+        return (
+          <MotionDiv key="lessons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <LessonsPage />
+          </MotionDiv>
+        );
+      case 'account':
+        return (
+          <MotionDiv key="account" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <AccountPage user={user} />
+          </MotionDiv>
+        );
+      case 'dashboard':
+        return (
+          <MotionDiv key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <DashboardPage />
+          </MotionDiv>
+        );
       default:
         return (
           <MotionDiv
@@ -209,7 +256,10 @@ function App() {
           setActiveTab(tab);
           if (tab === 'workout') setCurrentView('home');
           else if (tab === 'progress') setCurrentView('progress');
-          else setCurrentView(tab);
+          else if (tab === 'dashboard') setCurrentView('dashboard');
+          else if (tab === 'nutrition') setCurrentView('nutrition');
+          else if (tab === 'account') setCurrentView('account');
+          else if (tab === 'lessons') setCurrentView('lessons');
         }}
       />
     </div>

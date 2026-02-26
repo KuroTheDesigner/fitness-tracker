@@ -2,13 +2,13 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Settings, User } from 'lucide-react';
+import { Play, Settings, Eye, FileText } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkout';
 
 const DAYS_OF_WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-const HomePage = ({ userId, onStartWorkout }) => {
-    const { program, schedule, isLoading } = useWorkout(userId);
+const HomePage = ({ userId, onOpenWorkout }) => {
+    const { schedule, isLoading } = useWorkout(userId);
 
     // Get current day of week
     const today = DAYS_OF_WEEK[new Date().getDay()];
@@ -20,13 +20,37 @@ const HomePage = ({ userId, onStartWorkout }) => {
             day,
             activity: workout?.name || 'Rest',
             type: workout ? 'workout' : 'rest',
-            isCurrentDay: day === today,
+            dayStatus: workout?.dayStatus || (day === today ? 'current' : 'future'),
+            isCurrentDay: workout?.dayStatus === 'current' || day === today,
             workoutId: workout?._id,
+            isCompleted: workout?.isCompleted || false,
         };
     });
 
     // Find today's workout
     const todaysWorkout = weeklySchedule.find(w => w.isCurrentDay && w.type === 'workout');
+
+    const getActionLabel = (dayStatus) => {
+        if (dayStatus === 'current') return 'START';
+        if (dayStatus === 'past') return 'SUMMARY';
+        return 'PREVIEW';
+    };
+
+    const getActionIcon = (dayStatus) => {
+        if (dayStatus === 'current') return <Play size={14} fill="currentColor" />;
+        if (dayStatus === 'past') return <FileText size={14} />;
+        return <Eye size={14} />;
+    };
+
+    const handleWorkoutOpen = (item) => {
+        if (!item?.workoutId || !onOpenWorkout) return;
+        onOpenWorkout({
+            workoutId: item.workoutId,
+            workoutName: item.activity,
+            dayStatus: item.dayStatus,
+            isCompleted: item.isCompleted,
+        });
+    };
 
     // Loading skeleton
     if (isLoading) {
@@ -62,22 +86,8 @@ const HomePage = ({ userId, onStartWorkout }) => {
 
     return (
         <div className="screen animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex justify-between items-center py-4 mb-4">
-                <div className="flex flex-col">
-                    <span className="text-xs font-semibold secondary-text uppercase tracking-wider">
-                        {program?.description || 'Your Program'}
-                    </span>
-                    <h2 className="text-3xl font-display leading-tight">
-                        {program?.name || 'Workout Plan'}
-                    </h2>
-                </div>
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted/50">
-                    <User size={20} />
-                </Button>
-            </header>
-
             {/* Today's Workout Card */}
-            <Card className="relative overflow-hidden h-[200px] border-none glow mb-8">
+            <Card className="relative overflow-hidden h-[220px] border-none glow mb-8 mt-2">
                 <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 to-transparent p-6 flex flex-col justify-center">
                     {todaysWorkout ? (
                         <>
@@ -86,7 +96,7 @@ const HomePage = ({ userId, onStartWorkout }) => {
                             <Button
                                 size="lg"
                                 className="w-fit gap-2 font-bold"
-                                onClick={() => onStartWorkout(todaysWorkout.workoutId, todaysWorkout.activity)}
+                                onClick={() => handleWorkoutOpen(todaysWorkout)}
                             >
                                 <Play size={18} fill="currentColor" />
                                 GET STARTED
@@ -127,17 +137,17 @@ const HomePage = ({ userId, onStartWorkout }) => {
                             </div>
                             <Card
                                 className={`flex-1 flex justify-between items-center p-3 cursor-pointer transition-all hover:border-primary/50 ${item.type === 'rest' ? 'opacity-50' : ''}`}
-                                onClick={item.type === 'workout' ? () => onStartWorkout(item.workoutId, item.activity) : undefined}
+                                onClick={item.type === 'workout' ? () => handleWorkoutOpen(item) : undefined}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === 'workout' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                        {item.type === 'workout' ? <Play size={14} fill="currentColor" /> : <div className="w-2 h-2 rounded-full border-2 border-current" />}
+                                        {item.type === 'workout' ? getActionIcon(item.dayStatus) : <div className="w-2 h-2 rounded-full border-2 border-current" />}
                                     </div>
                                     <span className={`font-medium ${item.isCurrentDay ? 'text-foreground' : 'text-muted-foreground'}`}>{item.activity}</span>
                                 </div>
                                 {item.type === 'workout' && (
                                     <Button variant="outline" size="sm" className="h-7 px-3 text-[10px] font-bold border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
-                                        START
+                                        {getActionLabel(item.dayStatus)}
                                     </Button>
                                 )}
                             </Card>

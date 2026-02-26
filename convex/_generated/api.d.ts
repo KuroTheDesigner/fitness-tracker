@@ -9,6 +9,7 @@
  */
 
 import type * as exercises from "../exercises.js";
+import type * as http from "../http.js";
 import type * as logging from "../logging.js";
 import type * as progress from "../progress.js";
 import type * as seed from "../seed.js";
@@ -23,6 +24,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   exercises: typeof exercises;
+  http: typeof http;
   logging: typeof logging;
   progress: typeof progress;
   seed: typeof seed;

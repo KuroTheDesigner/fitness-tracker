@@ -4,9 +4,9 @@ import { api } from '../../convex/_generated/api';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, MoreVertical, Trophy, Zap, Info } from 'lucide-react';
+import { ChevronLeft, MoreVertical, Zap, Info, CheckCircle2, Eye } from 'lucide-react';
 
-const WorkoutSummaryPage = ({ workoutId, workoutName, onBack, onStart, onViewExercise }) => {
+const WorkoutSummaryPage = ({ workoutId, workoutName, dayStatus, isCompleted, onBack, onStart, onViewExercise }) => {
     // Fetch workout with exercises from Convex
     const workout = useQuery(
         api.workouts.getWorkoutWithExercises,
@@ -84,6 +84,9 @@ const WorkoutSummaryPage = ({ workoutId, workoutName, onBack, onStart, onViewExe
     const muscleBreakdown = getMuscleBreakdown(workout.exercises);
     const totalSets = workout.exercises?.reduce((sum, we) => sum + we.targetSets, 0) || 0;
     const estimatedTime = Math.round(totalSets * 2.5); // ~2.5 min per set average
+    const isFuturePreview = dayStatus === 'future';
+    const primaryCtaLabel = isFuturePreview ? 'PREVIEW WORKOUT' : isCompleted ? 'VIEW WORKOUT' : 'START WORKOUT';
+    const subtitleLabel = isFuturePreview ? 'Planned Workout' : isCompleted ? 'Completed Workout' : 'Planned Workout';
 
     return (
         <div className="screen animate-in fade-in slide-in-from-right-4 duration-500">
@@ -97,7 +100,14 @@ const WorkoutSummaryPage = ({ workoutId, workoutName, onBack, onStart, onViewExe
             </header>
 
             <div className="mb-8">
-                <span className="text-xs font-bold secondary-text uppercase tracking-widest">Planned Workout</span>
+                <div className="flex items-center justify-between gap-3 mb-1">
+                    <span className="text-xs font-bold secondary-text uppercase tracking-widest">{subtitleLabel}</span>
+                    {isCompleted && (
+                        <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-black px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/40">
+                            <CheckCircle2 size={12} /> Completed
+                        </div>
+                    )}
+                </div>
                 <h1 className="text-5xl font-display leading-none mb-1">{workout.name || workoutName}</h1>
                 <div className="text-sm secondary-text">
                     {workout.exercises?.length || 0} Exercises • ~{estimatedTime} Min
@@ -130,7 +140,6 @@ const WorkoutSummaryPage = ({ workoutId, workoutName, onBack, onStart, onViewExe
                     <h3 className="text-sm font-display text-muted-foreground uppercase">
                         {workout.exercises?.length || 0} Exercises
                     </h3>
-                    <Button variant="link" size="sm" className="text-primary p-0 h-auto">EDIT PLAN</Button>
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -180,12 +189,12 @@ const WorkoutSummaryPage = ({ workoutId, workoutName, onBack, onStart, onViewExe
 
             {/* Fixed Bottom Buttons */}
             <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent pt-10 z-50 flex gap-4 max-w-[480px] mx-auto w-full">
-                <Button variant="secondary" className="flex-1 h-14 font-black text-sm tracking-widest uppercase">WARMUP</Button>
                 <Button
-                    className="flex-1 h-14 font-black text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,102,0.3)] hover:shadow-[0_0_30px_rgba(0,255,102,0.5)]"
+                    className="flex-1 h-14 font-black text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,102,0.3)] hover:shadow-[0_0_30px_rgba(0,255,102,0.5)] gap-2"
                     onClick={onStart}
                 >
-                    START WORKOUT
+                    {(isCompleted || isFuturePreview) && <Eye size={16} />}
+                    {primaryCtaLabel}
                 </Button>
             </div>
         </div>
