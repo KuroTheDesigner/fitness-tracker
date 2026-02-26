@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Play, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useQuery, useMutation, useConvexAuth } from 'convex/react';
 import { api } from '../convex/_generated/api';
 import { signOut } from './shoo';
@@ -15,6 +15,7 @@ import NutritionPage from './pages/NutritionPage';
 import LessonsPage from './pages/LessonsPage';
 import AccountPage from './pages/AccountPage';
 import DashboardPage from './pages/DashboardPage';
+import OnboardingPage from './pages/OnboardingPage';
 import BottomNav from './components/layout/BottomNav';
 import './index.css';
 
@@ -27,6 +28,7 @@ function App() {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedDayStatus, setSelectedDayStatus] = useState('current');
   const [selectedWorkoutCompleted, setSelectedWorkoutCompleted] = useState(false);
+  const [onboardingFlowActive, setOnboardingFlowActive] = useState(false);
 
   const { isAuthenticated, isLoading } = useConvexAuth();
 
@@ -36,6 +38,8 @@ function App() {
 
   const swapExercise = useMutation(api.exercises.swapExercise);
   const ensureUser = useMutation(api.users.ensureUser);
+  const bootstrapOnboardingProgram = useMutation(api.workouts.bootstrapOnboardingProgram);
+  const completeOnboarding = useMutation(api.users.completeOnboarding);
 
   // Auto-create user record on first sign-in
   useEffect(() => {
@@ -43,6 +47,26 @@ function App() {
       ensureUser();
     }
   }, [isAuthenticated, user, ensureUser]);
+
+  const handleOnboardingStartWorkout = async (preferredWorkoutDays) => {
+    const result = await bootstrapOnboardingProgram({ preferredWorkoutDays });
+    if (!result?.workoutId) throw new Error('Could not create first workout.');
+
+    setSelectedWorkoutId(result.workoutId);
+    setSelectedWorkoutName(result.workoutName || 'First Workout');
+    setSelectedDayStatus('current');
+    setSelectedWorkoutCompleted(false);
+    setActiveTab('workout');
+    setCurrentView('active-workout');
+    setOnboardingFlowActive(true);
+  };
+
+  const handleOnboardingGuideComplete = async () => {
+    await completeOnboarding();
+    setOnboardingFlowActive(false);
+    setActiveTab('dashboard');
+    setCurrentView('dashboard');
+  };
 
   const handleOpenWorkout = ({ workoutId, workoutName, dayStatus, isCompleted }) => {
     setSelectedWorkoutId(workoutId);
@@ -71,6 +95,22 @@ function App() {
   const renderView = () => {
     if (isLoading) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Initializing System...</div>;
     if (!isAuthenticated) return <AuthPage />;
+    if (user === undefined) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Loading Profile...</div>;
+
+    const shouldShowOnboarding = !!user && user.onboardingCompleted !== true && !onboardingFlowActive;
+    if (shouldShowOnboarding) {
+      return (
+        <MotionDiv
+          key="onboarding"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.25 }}
+        >
+          <OnboardingPage onComplete={handleOnboardingStartWorkout} />
+        </MotionDiv>
+      );
+    }
 
     switch (currentView) {
       case 'home':
@@ -132,6 +172,8 @@ function App() {
               }}
               onViewExercise={handleViewExercise}
               onSwapExercise={handleSwapExercise}
+              onboardingGuideEnabled={onboardingFlowActive && user?.onboardingCompleted !== true}
+              onOnboardingGuideComplete={handleOnboardingGuideComplete}
             />
           </MotionDiv>
         );
@@ -250,18 +292,20 @@ function App() {
         </AnimatePresence>
       </main>
 
-      <BottomNav
-        activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          if (tab === 'workout') setCurrentView('home');
-          else if (tab === 'progress') setCurrentView('progress');
-          else if (tab === 'dashboard') setCurrentView('dashboard');
-          else if (tab === 'nutrition') setCurrentView('nutrition');
-          else if (tab === 'account') setCurrentView('account');
-          else if (tab === 'lessons') setCurrentView('lessons');
-        }}
-      />
+      {user?.onboardingCompleted === true && (
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            if (tab === 'workout') setCurrentView('home');
+            else if (tab === 'progress') setCurrentView('progress');
+            else if (tab === 'dashboard') setCurrentView('dashboard');
+            else if (tab === 'nutrition') setCurrentView('nutrition');
+            else if (tab === 'account') setCurrentView('account');
+            else if (tab === 'lessons') setCurrentView('lessons');
+          }}
+        />
+      )}
     </div>
   );
 }

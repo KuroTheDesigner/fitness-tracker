@@ -35,6 +35,7 @@ export const ensureUser = mutation({
             shooSubject: identity.subject,
             name: identity.name ?? undefined,
             email: identity.email ?? undefined,
+            onboardingCompleted: false,
             currentStreak: 0,
             longestStreak: 0,
             createdAt: Date.now(),
@@ -46,5 +47,27 @@ export const getUser = query({
     args: { userId: v.id("users") },
     handler: async (ctx, args) => {
         return await ctx.db.get(args.userId);
+    },
+});
+
+export const completeOnboarding = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_shooSubject", (q) => q.eq("shooSubject", identity.subject))
+            .unique();
+
+        if (!user) throw new Error("User not found");
+
+        await ctx.db.patch(user._id, {
+            onboardingCompleted: true,
+            onboardingCompletedAt: Date.now(),
+        });
+
+        return { success: true };
     },
 });

@@ -24,6 +24,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 ### BR-03: Smarter Swap Alternatives
 - Recommended alternatives = same muscle + same emphasized sub-region.
 - Other alternatives = same muscle group alternatives.
+- The app does not need to display explanatory reason text for a recommendation; it only needs to present the Recommended and Other alternatives sets.
 
 ### BR-04: Schedule-Day State & Routing Logic
 - Day card labels and behavior:
@@ -49,7 +50,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 
 ### BR-07: Navigation / Information Architecture
 - Remove AI chat icon from schedule top-right.
-- Move account access into dedicated main-menu destination.
+- Treat the bottom navigation bar as the **main menu**, with the **Account** tab as the **right-most item**.
 - Remove Lessons from main tab navigation.
 
 ### BR-08: Coming Soon Experience
@@ -93,8 +94,8 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 ### BR-15: Weekly Muscle Volume System
 - Interactive muscle model (faceless/hairless) with tap targets.
 - Track workouts completed, muscle coverage, and weekly volume %.
-- Default weekly target = 6 sets per major muscle.
-- Main target = 1.0 credit, secondary target = weighted credit (0.5/0.0 by evidence).
+- Weekly volume is measured in **sets per muscle per week**, with a default target of **6 sets per major muscle**, unless overridden per muscle.
+- Main target = 1.0 credit per set, secondary target = weighted credit per set (0.5/0.0 by evidence).
 - Per-muscle color states by progress bands.
 - Muscle detail popup with X/Y sets, remaining sets, contributions.
 - Per-muscle custom weekly targets that update global volume calculations.
@@ -102,6 +103,18 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 ### BR-16: Exercise Taxonomy & Evidence Mapping
 - Validate primary/secondary/emphasized muscle metadata for all exercises.
 - Align taxonomy with swap recommendations and weekly volume math.
+
+### BR-17: New-User Onboarding & First Workout Creation
+- First-time account users must complete onboarding before normal app navigation.
+- Onboarding is a multi-screen interactive slideshow/questionnaire.
+- Onboarding must capture preferred workout days of the week.
+- App must generate an initial workout schedule based on selected days.
+- After onboarding, user is routed directly to the main workout logging screen for their first upcoming workout.
+- First workout experience must guide user through:
+  - adding a new exercise,
+  - creating a superset,
+  - separating a superset.
+- After completing this first workout creation experience, user is routed to Dashboard.
 
 ## Out of Scope for This BRD Revision
 - Detailed technical implementation steps.
@@ -112,7 +125,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 - All user-requested feature tasks are captured at requirement level in PRD and BRD.
 - Detailed implementation plans are deferred to per-feature execution documents.
 
-## Delivery Status Update — First Pass (Pre-Live Validation)
+## Delivery Status Update — First Pass (Implemented)
 
 | Requirement | Status |
 |---|---|
@@ -126,6 +139,13 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
 | BR-11 Account settings experience | Initial shell delivered (media upload persistence pending). |
 
+### Notes
+- This status reflects implemented work in the current codebase and local validation.
+- Remaining items stay in scope for next implementation passes.
+
 ### Engineering Validation (Pre-Live)
 - Lint passes.
 - Production build passes.
+
+### Additional Context — Sample Screens
+- See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

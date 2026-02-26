@@ -8,24 +8,24 @@
 | Bottom navigation foundation | App has a 5-item bottom nav and tab switching behavior. | Complete (tested) |
 | Workout tab base page shell | Workout tab view exists with hero/schedule structure and skeleton states. | in progress |
 | Progress tab base page | Analytics/progress page exists with stats, charts, and PR section scaffolding. | Complete (tested) |
-| Lessons tab removal + account replacement | Remove Lessons tab and replace it with Account icon; Account must be right-most nav item. | yet to start |
-| Nutrition coming-soon page design | Build a dedicated Nutrition coming-soon page with icon and exact flavor text: "A Good rule of thumb is swap the portion size of your protein and carbs, then double your veggies and fruit." | yet to start |
-| Dashboard as landing page redesign | Research top workout apps and redesign Dashboard as high-impact app landing experience. | yet to start |
+| Lessons tab removal + account replacement | Remove Lessons tab and replace it with Account icon; Account must be right-most item in the bottom-nav main menu. | Complete (untested) |
+| Nutrition coming-soon page design | Build a dedicated Nutrition coming-soon page with icon and exact flavor text: "A Good rule of thumb is swap the portion size of your protein and carbs, then double your veggies and fruit." | Complete (untested) |
+| Dashboard as landing page redesign | Research top workout apps and redesign Dashboard as high-impact app landing experience. | in progress |
 | Progress page full redesign | Build polished, animated progress dashboards with editable time ranges and glanceable insights. | yet to start |
-| Account settings page | Build full account settings area with profile management controls. | yet to start |
-| Profile picture upload/edit | Add user profile image upload, persistence, and edit/remove flows. | yet to start |
-| Account banner upload/edit | Add top banner image (default first) with replace/edit support. | yet to start |
-| Workout schedule top-row cleanup | Remove current top title row, move hero card to top margin, and align with requested layout. | yet to start |
+| Account settings page | Build full account settings area with profile management controls. | in progress |
+| Profile picture upload/edit | Add user profile image upload, persistence, and edit/remove flows. | in progress |
+| Account banner upload/edit | Add top banner image (default first) with replace/edit support. | in progress |
+| Workout schedule top-row cleanup | Remove current top title row, move hero card to top margin, and align with requested layout. | Complete (untested) |
 | Workout schedule CTA parity | Ensure hero "Get Started" routes to same destination as current-day workout "Start". | Complete (untested) |
-| Workout day status states | Implement day card labels/behavior: future=Preview, current=Start, past=Summary. | yet to start |
+| Workout day status states | Implement day card labels/behavior: future=Preview, current=Start, past=Summary. | Complete (untested) |
 | Workout day drag-and-drop | Add drag handle icon on day cards and support moving workout/rest day activity between days. | yet to start |
 | Rest day auto-fill behavior | Auto-place Rest day when a day has no workout after drag/reorder operations. | yet to start |
 | Day-card long-press submenu | Long-press any day card to show add/remove workout actions based on card type. | yet to start |
-| Workout summary (state-aware) | Make summary screen vary correctly for completed vs future workouts, with proper CTA text and behavior. | in progress |
-| Remove warm-up action | Remove warm-up button from summary flow per product direction. | yet to start |
-| Completed workout view flow | For completed sessions show completed status and "View Workout" that opens that historical logging session. | yet to start |
-| Future workout preview flow | "Preview Workout" should open tracking screen with empty kg/reps/effort fields. | yet to start |
-| Post-finish destination | After finishing workout, route to completed/past summary screen variant. | yet to start |
+| Workout summary (state-aware) | Make summary screen vary correctly for completed vs future workouts, with proper CTA text and behavior. | Complete (untested) |
+| Remove warm-up action | Remove warm-up button from summary flow per product direction. | Complete (untested) |
+| Completed workout view flow | For completed sessions show completed status and "View Workout" that opens that historical logging session. | Complete (untested) |
+| Future workout preview flow | "Preview Workout" should open tracking screen with empty kg/reps/effort fields. | Complete (untested) |
+| Post-finish destination | After finishing workout, route to completed/past summary screen variant. | Complete (untested) |
 | Active workout logging table | Base tracking table exists with set rows, inputs, completion toggles, and rest/add-set controls. | Complete (untested) |
 | Weight field conditional rendering | Show KG field only for weighted exercises; hide/adjust for bodyweight where required. | yet to start |
 | Set completion rules | Mark set complete only when required fields are filled (kg where applicable, reps, effort). | in progress |
@@ -37,12 +37,12 @@
 | Placeholder carry-forward behavior | For uncompleted sets, show previous-session kg/reps as placeholders until user logs current values. | yet to start |
 | Rep trend chevrons | Add up/down multi-chevron indicators for per-set rep trend vs prior sessions. | yet to start |
 | Superset display foundation | Superset metadata rendering exists in workout summary and active workout views. | Complete (untested) |
-| Superset creation from menu | Add "Create Superset" action in 3-dot menu for non-superset exercise and selection modal flow. | yet to start |
+| Superset creation from menu | Add "Create Superset" action in 3-dot menu for non-superset exercise and selection modal flow. | Complete (untested) |
 | Superset drag-and-drop operations | Support drag to create superset, drag into existing superset, drag out of superset, and reordering via drag. | yet to start |
 | Superset split handling policy | No separate split action; rely on drag in/out mechanics to split/restructure supersets. | yet to start |
-| Remove exercise via menu | Add remove exercise action in 3-dot menu with confirmations/safe behavior. | yet to start |
-| Swipe-to-remove safety interaction | Add left/right swipe remove with visible red container and minimum swipe threshold before delete. | yet to start |
-| 3-dot menu feature parity | Implement full menu actions needed by product flow (swap/form guide/history/reorder/remove and final policy decisions). | yet to start |
+| Remove exercise via menu | Add remove exercise action in 3-dot menu with confirmations/safe behavior. | Complete (untested) |
+| Swipe-to-remove safety interaction | Add left/right swipe remove with visible red container and minimum swipe threshold before delete. | Complete (untested) |
+| 3-dot menu feature parity | Implement full menu actions needed by product flow (swap/form guide/history/reorder/remove and final policy decisions). | in progress |
 | Swap screen foundation | Swap page exists with search, all/muscle grouping, and custom exercise creation. | Complete (untested) |
 | Recommended alternatives logic | Implement recommendations for swaps based on same muscle + same emphasized sub-region. | yet to start |
 | Other alternatives logic | Show broader alternatives that target same main muscle(s), distinct from recommended set. | yet to start |
@@ -70,6 +70,11 @@
 | Seed/admin safety hardening | Protect or remove seed/admin-like mutations from production paths. | yet to start |
 | Schema validation hardening | Re-enable and enforce schema validation for data integrity and safer iteration. | yet to start |
 | New-user workout bootstrap | Ensure newly authenticated users always get an initial program/schedule so workout tab does not remain in unresolved loading state. | yet to start |
+| New-user onboarding flow | First-time users must complete onboarding slideshow/questionnaire before normal app usage. | yet to start |
+| Onboarding workout-day selection | Onboarding must collect preferred workout days of week and persist the selection. | yet to start |
+| First workout auto-creation flow | After onboarding, route user directly into their first upcoming workout logging session to build initial workout content. | yet to start |
+| First-workout guided creation | In first workout flow, guide user through adding an exercise, creating a superset, and separating a superset. | yet to start |
+| Onboarding completion routing | After first workout creation flow, return user to Dashboard landing page. | yet to start |
 | Validation pipeline | Add and enforce automated tests and checks to prevent regressions across frontend/backend/auth. | yet to start |
 | Global error handling + toasts | Add error boundaries and user-facing success/error toasts for key actions. | yet to start |
 | PR celebration animation | Add confetti/celebration animation when a new PR is achieved. | yet to start |
@@ -98,6 +103,7 @@
 - `Recommended alternatives`: same primary muscle group **and** same emphasized sub-region focus.
 - `Other alternatives`: same primary muscle group(s) without same-focus requirement.
 - No explanatory reason text is required for why recommendations were picked.
+  - Recommendations rely on per-exercise taxonomy (primary muscles, secondary muscles, emphasized focus) defined in the Exercise Data/Taxonomy tasks below.
 
 ### 4) Workout Schedule Routing & Day-State Rules
 - On schedule cards:
@@ -119,7 +125,7 @@
 - Ensure hero `Get Started` routes to same destination as current-day `Start`.
 - Remove schedule top title row (`Beginner Phase...`) and align hero card to top margin.
 - Remove AI chat icon from top-right.
-- Move user account access into its own main-menu destination.
+- Ensure the bottom navigation bar is treated as the **main menu**, with the **Account** tab as the right-most item.
 - Add hold-to-drag handle icon (half-up/half-down arrow style) on each day card to move activity between days.
 - Auto-insert `Rest` when a day has no workout.
 - Long-press day activity card to show floating submenu:
@@ -139,7 +145,7 @@
 - Target a distinctive, bold, high-polish visual direction.
 
 ### 8) Account Settings Experience
-- Add account icon at top-right (global app-shell target) opening full account settings page.
+- Account settings are accessed via the **Account** tab in the bottom-nav main menu (right-most item), which opens the full account settings page.
 - Include profile photo upload/edit/remove.
 - Include top banner area (top third style) with default image and replace flow.
 
@@ -176,8 +182,8 @@
 - Add interactive faceless/hairless muscle model with highlighted muscle regions.
 - Keep weekly completed workouts + body coverage metrics.
 - Add weekly `Volume` % metric where 100% = all muscle targets met.
-- Default target = 6 sets per major muscle/week.
-- Weighted contributions:
+- Weekly volume is measured in **sets per muscle per week**, with a default target of **6 sets per major muscle/week**, unless overridden per muscle.
+- Weighted contributions (set-level credits):
   - primary-target set contribution = 1.0,
   - secondary-target set contribution = 0.5 or 0.0 where negligible by evidence.
 - Muscle color scale by weekly set progress:
@@ -202,6 +208,18 @@
 - This addendum is intentionally feature/task-level only (no implementation sequencing yet).
 - Detailed technical implementation plans will be created per feature during execution phases.
 
+### 15) New-User Onboarding & First Workout Creation
+- Trigger onboarding for first-time users immediately after account creation/sign-in.
+- Onboarding format: multi-screen interactive slideshow/questionnaire.
+- Collect preferred workout days of week.
+- Use selected workout days to generate the user's initial weekly workout schedule.
+- On onboarding completion, route user directly to the main workout logging screen for their first upcoming workout day.
+- In that first workout experience, provide guided steps for:
+  - adding a new exercise,
+  - creating a superset,
+  - separating a superset.
+- After the user completes this first-workout creation flow, route them to the Dashboard.
+
 ## Execution Update — First Implementation Pass (Pre-Live Validation)
 
 | Area | Outcome |
@@ -223,3 +241,6 @@
 ### Validation Snapshot (Pre-Live)
 - `npm run lint`: pass (2 existing warnings in generated Convex files).
 - `npm run build`: pass.
+
+### Additional Context — Sample Screens
+- See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

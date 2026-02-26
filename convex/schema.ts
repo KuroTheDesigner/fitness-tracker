@@ -6,6 +6,9 @@ export default defineSchema({
         shooSubject: v.optional(v.string()), // pairwise_sub from Shoo (Google identity)
         name: v.optional(v.string()),
         email: v.optional(v.string()),
+        onboardingCompleted: v.optional(v.boolean()),
+        onboardingCompletedAt: v.optional(v.number()),
+        preferredWorkoutDays: v.optional(v.array(v.string())),
         currentStreak: v.optional(v.number()),
         longestStreak: v.optional(v.number()),
         lastWorkoutDate: v.optional(v.string()), // ISO date string

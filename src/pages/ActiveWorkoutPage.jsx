@@ -5,23 +5,26 @@ import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Info, MoreVertical, CheckCircle2, Trophy, Clock, Plus, Zap, Timer, Trash2, Link2, X } from 'lucide-react';
+import { ChevronLeft, Info, MoreVertical, CheckCircle2, Trophy, Clock, Plus, Zap, Timer, Trash2, Link2, X, Check, Sparkles } from 'lucide-react';
 import RestTimer from '@/components/workout/RestTimer';
 import EffortRating from '@/components/workout/EffortRating';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
-const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', onBack, onFinish, onViewExercise, onSwapExercise }) => {
+const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', onBack, onFinish, onViewExercise, onSwapExercise, onboardingGuideEnabled = false, onOnboardingGuideComplete }) => {
     // Fetch workout data
     const workout = useQuery(
         api.workouts.getWorkoutWithExercises,
         workoutId ? { workoutId } : "skip"
     );
+    const allExercises = useQuery(api.exercises.getAllExercises);
 
     // Mutations
     const logSet = useMutation(api.logging.logSet);
     const finishWorkout = useMutation(api.logging.finishWorkout);
     const removeWorkoutExercise = useMutation(api.workouts.removeWorkoutExercise);
     const createSuperset = useMutation(api.workouts.createSuperset);
+    const addExerciseToWorkout = useMutation(api.workouts.addExerciseToWorkout);
+    const removeExerciseFromSuperset = useMutation(api.workouts.removeExerciseFromSuperset);
 
     // Timer and UI State
     const isReadOnly = mode === 'preview' || mode === 'history';
@@ -36,6 +39,13 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
     const [supersetSelections, setSupersetSelections] = useState([]);
     const [swipeOffsets, setSwipeOffsets] = useState({});
     const [activeTouch, setActiveTouch] = useState(null);
+    const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
+    const [exerciseSearch, setExerciseSearch] = useState('');
+    const [guideState, setGuideState] = useState({
+        addedExercise: false,
+        createdSuperset: false,
+        separatedSuperset: false,
+    });
 
     // Elapsed timer effect
     useEffect(() => {
@@ -215,6 +225,9 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                 baseWorkoutExerciseId: supersetBase._id,
                 workoutExerciseIds: supersetSelections,
             });
+            if (onboardingGuideEnabled) {
+                setGuideState((prev) => ({ ...prev, createdSuperset: true }));
+            }
             setSupersetBase(null);
             setSupersetSelections([]);
         } catch (error) {
@@ -272,6 +285,44 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
         return workout.exercises.filter((we) => we._id !== supersetBase._id && !we.supersetGroup);
     }, [supersetBase, workout]);
 
+    const filteredExercises = useMemo(() => {
+        if (!allExercises) return [];
+        const lower = exerciseSearch.toLowerCase().trim();
+        const inWorkout = new Set((workout?.exercises || []).map((we) => we.exerciseId));
+        return allExercises
+            .filter((ex) => !inWorkout.has(ex._id))
+            .filter((ex) => !lower || ex.name.toLowerCase().includes(lower));
+    }, [allExercises, exerciseSearch, workout]);
+
+    const guideCompleted = guideState.addedExercise && guideState.createdSuperset && guideState.separatedSuperset;
+
+    const handleAddExercise = async (exerciseId) => {
+        if (!workoutId || isReadOnly) return;
+        try {
+            await addExerciseToWorkout({ workoutId, exerciseId });
+            setShowAddExerciseModal(false);
+            setExerciseSearch('');
+            if (onboardingGuideEnabled) {
+                setGuideState((prev) => ({ ...prev, addedExercise: true }));
+            }
+        } catch (error) {
+            console.error('Failed to add exercise:', error);
+        }
+    };
+
+    const handleSeparateSuperset = async (workoutExerciseId) => {
+        if (isReadOnly) return;
+        try {
+            await removeExerciseFromSuperset({ workoutExerciseId });
+            setMenuExerciseId(null);
+            if (onboardingGuideEnabled) {
+                setGuideState((prev) => ({ ...prev, separatedSuperset: true }));
+            }
+        } catch (error) {
+            console.error('Failed to separate superset:', error);
+        }
+    };
+
     // Loading skeleton
     if (workout === undefined) {
         return (
@@ -305,18 +356,59 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                     {mode === 'preview' && <div className="text-[10px] font-black uppercase tracking-widest text-primary">Preview Mode</div>}
                     {mode === 'history' && <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Completed Session</div>}
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-bold border-primary text-primary hover:bg-primary hover:text-primary-foreground h-8"
-                    onClick={() => {
-                        if (isReadOnly) onFinish();
-                        else setShowFinishConfirm(true);
-                    }}
-                >
-                    {isReadOnly ? 'CLOSE' : 'FINISH'}
-                </Button>
+                <div className="flex items-center gap-2">
+                    {!isReadOnly && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-8 px-2"
+                            onClick={() => setShowAddExerciseModal(true)}
+                        >
+                            <Plus size={13} />
+                        </Button>
+                    )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-bold border-primary text-primary hover:bg-primary hover:text-primary-foreground h-8"
+                        onClick={() => {
+                            if (isReadOnly) onFinish();
+                            else setShowFinishConfirm(true);
+                        }}
+                    >
+                        {isReadOnly ? 'CLOSE' : 'FINISH'}
+                    </Button>
+                </div>
             </header>
+
+            {onboardingGuideEnabled && (
+                <div className="mb-6 rounded-xl border border-primary/40 bg-primary/10 p-3">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 text-primary">
+                            <Sparkles size={14} />
+                            <span className="text-xs font-black uppercase tracking-widest">First Workout Guide</span>
+                        </div>
+                        <span className="text-[10px] text-primary/80">3 steps</span>
+                    </div>
+                    <div className="space-y-2 mb-3">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+                            {guideState.addedExercise ? <Check size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
+                            Add a new exercise
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+                            {guideState.createdSuperset ? <Check size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
+                            Create a superset
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+                            {guideState.separatedSuperset ? <Check size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
+                            Separate a superset exercise
+                        </div>
+                    </div>
+                    <Button className="w-full h-9" disabled={!guideCompleted} onClick={() => guideCompleted && onOnboardingGuideComplete && onOnboardingGuideComplete()}>
+                        Finish Onboarding
+                    </Button>
+                </div>
+            )}
 
             {/* Global Rest Timer */}
             {activeRestTimer && (
@@ -405,6 +497,14 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                                                             onClick={() => openSupersetCreator(we)}
                                                         >
                                                             <Link2 size={14} /> Create Superset
+                                                        </button>
+                                                    )}
+                                                    {onboardingGuideEnabled && we.supersetGroup && (
+                                                        <button
+                                                            className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-secondary flex items-center gap-2"
+                                                            onClick={() => handleSeparateSuperset(we._id)}
+                                                        >
+                                                            <X size={14} /> Separate Superset
                                                         </button>
                                                     )}
                                                     <button
@@ -600,6 +700,40 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                             )}
                         </div>
                         <Button className="w-full" disabled={supersetSelections.length === 0} onClick={handleCreateSuperset}>Confirm Superset</Button>
+                    </div>
+                </div>
+            )}
+
+            {showAddExerciseModal && (
+                <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm p-6 flex items-end sm:items-center justify-center">
+                    <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5">
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-widest font-black text-primary">Workout Builder</p>
+                                <h3 className="text-lg font-display">Add Exercise</h3>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowAddExerciseModal(false)}><X size={14} /></Button>
+                        </div>
+                        <Input
+                            value={exerciseSearch}
+                            onChange={(e) => setExerciseSearch(e.target.value)}
+                            placeholder="Search exercise"
+                            className="mb-3"
+                        />
+                        <div className="max-h-64 overflow-y-auto space-y-2 mb-1">
+                            {filteredExercises.map((exercise) => (
+                                <button
+                                    key={exercise._id}
+                                    className="w-full text-left rounded-lg border border-border bg-secondary/30 px-3 py-2 text-sm font-bold uppercase tracking-tight hover:border-primary/40"
+                                    onClick={() => handleAddExercise(exercise._id)}
+                                >
+                                    {exercise.name}
+                                </button>
+                            ))}
+                            {filteredExercises.length === 0 && (
+                                <p className="text-xs text-muted-foreground py-3 text-center">No exercises available.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

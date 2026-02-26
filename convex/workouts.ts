@@ -23,6 +23,42 @@ export const getWorkoutSchedule = query({
 });
 
 const DAY_ORDER = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+const DAY_LABELS: Record<string, string> = {
+    SUN: "Sunday",
+    MON: "Monday",
+    TUE: "Tuesday",
+    WED: "Wednesday",
+    THU: "Thursday",
+    FRI: "Friday",
+    SAT: "Saturday",
+};
+
+const DEFAULT_EXERCISES = [
+    {
+        name: "Neutral Grip Dumbbell Press",
+        muscleGroups: ["Chest", "Front Delts"],
+        equipment: "Dumbbells",
+        youtubeUrl: "https://www.youtube.com/watch?v=W3M3pIsN_8k",
+    },
+    {
+        name: "3 Point Dumbbell Row",
+        muscleGroups: ["Back", "Biceps"],
+        equipment: "Dumbbells",
+        youtubeUrl: "https://www.youtube.com/watch?v=6KOclUM8D3A",
+    },
+    {
+        name: "Dumbbell Romanian Deadlift",
+        muscleGroups: ["Hamstrings", "Glutes"],
+        equipment: "Dumbbells",
+        youtubeUrl: "https://www.youtube.com/watch?v=JCX81Pbcid8",
+    },
+    {
+        name: "Dumbbell Lateral Raises",
+        muscleGroups: ["Shoulders"],
+        equipment: "Dumbbells",
+        youtubeUrl: "https://www.youtube.com/watch?v=PzsziW-H-6Y",
+    },
+];
 
 export const getWorkoutScheduleWithStatus = query({
     args: { programId: v.id("programs"), userId: v.id("users") },
@@ -143,5 +179,172 @@ export const createSuperset = mutation({
         );
 
         return { success: true, supersetGroup, count: allIds.length };
+    },
+});
+
+export const addExerciseToWorkout = mutation({
+    args: {
+        workoutId: v.id("workouts"),
+        exerciseId: v.id("exercises"),
+    },
+    handler: async (ctx, args) => {
+        const workout = await ctx.db.get(args.workoutId);
+        if (!workout) throw new Error("Workout not found");
+
+        const orderIndex = workout.exercises.length;
+        const workoutExerciseId = await ctx.db.insert("workoutExercises", {
+            workoutId: args.workoutId,
+            exerciseId: args.exerciseId,
+            orderIndex,
+            targetSets: 3,
+            targetReps: "8-12",
+            restSeconds: 90,
+        });
+
+        await ctx.db.patch(args.workoutId, {
+            exercises: [...workout.exercises, workoutExerciseId],
+        });
+
+        return { success: true, workoutExerciseId };
+    },
+});
+
+export const removeExerciseFromSuperset = mutation({
+    args: { workoutExerciseId: v.id("workoutExercises") },
+    handler: async (ctx, args) => {
+        const workoutExercise = await ctx.db.get(args.workoutExerciseId);
+        if (!workoutExercise) throw new Error("Workout exercise not found");
+
+        await ctx.db.patch(args.workoutExerciseId, { supersetGroup: undefined });
+        return { success: true };
+    },
+});
+
+export const bootstrapOnboardingProgram = mutation({
+    args: {
+        preferredWorkoutDays: v.array(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_shooSubject", (q) => q.eq("shooSubject", identity.subject))
+            .unique();
+
+        if (!user) throw new Error("User not found");
+
+        const normalizedDays = Array.from(
+            new Set(
+                args.preferredWorkoutDays
+                    .map((d) => d.toUpperCase())
+                    .filter((d) => DAY_ORDER.includes(d))
+            )
+        );
+
+        if (normalizedDays.length === 0) {
+            throw new Error("Select at least one workout day");
+        }
+
+        let program = await ctx.db
+            .query("programs")
+            .withIndex("by_userId", (q) => q.eq("userId", user._id))
+            .filter((q) => q.eq(q.field("isActive"), true))
+            .unique();
+
+        if (!program) {
+            const programId = await ctx.db.insert("programs", {
+                name: "Starter Onboarding Program",
+                description: "Initial plan generated from onboarding day selection.",
+                weeks: 8,
+                isActive: true,
+                userId: user._id,
+            });
+            program = await ctx.db.get(programId);
+        }
+
+        if (!program) throw new Error("Failed to create program");
+
+        const existingWorkouts = await ctx.db
+            .query("workouts")
+            .withIndex("by_programId", (q) => q.eq("programId", program._id))
+            .collect();
+
+        for (const workout of existingWorkouts) {
+            for (const workoutExerciseId of workout.exercises) {
+                await ctx.db.delete(workoutExerciseId);
+            }
+            await ctx.db.delete(workout._id);
+        }
+
+        const exerciseLibrary = await ctx.db.query("exercises").collect();
+        const byName = new Map(exerciseLibrary.map((exercise) => [exercise.name.toLowerCase(), exercise._id]));
+
+        const defaultExerciseIds = [];
+        for (const exercise of DEFAULT_EXERCISES) {
+            let exerciseId = byName.get(exercise.name.toLowerCase());
+            if (!exerciseId) {
+                exerciseId = await ctx.db.insert("exercises", {
+                    name: exercise.name,
+                    muscleGroups: exercise.muscleGroups,
+                    equipment: exercise.equipment,
+                    youtubeUrl: exercise.youtubeUrl,
+                    isCustom: false,
+                });
+                byName.set(exercise.name.toLowerCase(), exerciseId);
+            }
+            defaultExerciseIds.push(exerciseId);
+        }
+
+        const sortedDays = normalizedDays.sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+        const createdWorkouts = [];
+
+        for (let i = 0; i < sortedDays.length; i++) {
+            const day = sortedDays[i];
+            const workoutId = await ctx.db.insert("workouts", {
+                programId: program._id,
+                name: `${DAY_LABELS[day] || day} Workout`,
+                weekNumber: 1,
+                dayOfWeek: day,
+                exercises: [],
+            });
+
+            const workoutExerciseIds = [];
+            for (let j = 0; j < 3; j++) {
+                const exerciseId = defaultExerciseIds[(i + j) % defaultExerciseIds.length];
+                const workoutExerciseId = await ctx.db.insert("workoutExercises", {
+                    workoutId,
+                    exerciseId,
+                    orderIndex: j,
+                    targetSets: j === 2 ? 2 : 3,
+                    targetReps: j === 2 ? "10-15" : "8-12",
+                    restSeconds: j === 2 ? 75 : 90,
+                });
+                workoutExerciseIds.push(workoutExerciseId);
+            }
+
+            await ctx.db.patch(workoutId, { exercises: workoutExerciseIds });
+            createdWorkouts.push({ workoutId, dayOfWeek: day, name: `${DAY_LABELS[day] || day} Workout` });
+        }
+
+        const todayIndex = new Date().getDay();
+        const preferredIndices = sortedDays.map((d) => DAY_ORDER.indexOf(d));
+        const nextIndex = preferredIndices.find((idx) => idx >= todayIndex) ?? preferredIndices[0];
+        const nextDay = DAY_ORDER[nextIndex];
+        const firstUpcoming = createdWorkouts.find((w) => w.dayOfWeek === nextDay) || createdWorkouts[0];
+
+        await ctx.db.patch(user._id, {
+            preferredWorkoutDays: sortedDays,
+            onboardingCompleted: false,
+        });
+
+        return {
+            success: true,
+            programId: program._id,
+            workoutId: firstUpcoming?.workoutId,
+            workoutName: firstUpcoming?.name,
+            dayOfWeek: firstUpcoming?.dayOfWeek,
+        };
     },
 });
