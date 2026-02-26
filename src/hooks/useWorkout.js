@@ -7,6 +7,8 @@ export const useWorkout = (userId) => {
         api.workouts.getWorkoutSchedule,
         program ? { programId: program._id } : "skip"
     );
+    const isProgramLoading = !!userId && program === undefined;
+    const isScheduleLoading = !!program && schedule === undefined;
 
     const logSet = useMutation(api.logging.logSet);
     const finishWorkout = useMutation(api.logging.finishWorkout);
@@ -16,6 +18,6 @@ export const useWorkout = (userId) => {
         schedule,
         logSet,
         finishWorkout,
-        isLoading: program === undefined || schedule === undefined,
+        isLoading: isProgramLoading || isScheduleLoading,
     };
 };
