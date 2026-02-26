@@ -33,7 +33,7 @@
     --input: 0 0% 15%;
     --ring: 144 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom Fitness Tokens */
     --accent-glow: rgba(0, 255, 102, 0.3);
