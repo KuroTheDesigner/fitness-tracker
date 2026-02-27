@@ -249,7 +249,7 @@
 ### Validation Snapshot (Pre-Live)
 - `npm run lint`: pass (2 existing warnings in generated Convex files).
 - `npm run build`: pass.
-- End-to-end onboarding validation: pass (add-set persistence, guided checklist completion flow, and account-page sign-out placement).
+- End-to-end onboarding validation: pass (add-set persistence, guided checklist completion flow, mid-flow reload restoration into guided workout with persisted progress, and account-page sign-out placement).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

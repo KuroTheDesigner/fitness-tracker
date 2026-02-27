@@ -24,6 +24,8 @@ import {
 } from './lib/authStorage';
 import './index.css';
 
+const ONBOARDING_ACTIVE_WORKOUT_KEY = 'onboarding_active_workout_id';
+
 function App() {
   const MotionDiv = motion.div;
   const [activeTab, setActiveTab] = useState('workout');
@@ -90,6 +92,9 @@ function App() {
     localStorage.setItem(AUTH_LAST_FLOW_KEY, flow);
     localStorage.setItem(AUTH_LAST_USERNAME_KEY, username);
     localStorage.removeItem(AUTH_PENDING_INTENT_KEY);
+    if (flow === 'signin') {
+      localStorage.removeItem(ONBOARDING_ACTIVE_WORKOUT_KEY);
+    }
     setCredentialSessionToken(sessionToken);
   };
 
@@ -109,6 +114,7 @@ function App() {
     }
 
     localStorage.removeItem(AUTH_PENDING_INTENT_KEY);
+    localStorage.removeItem(ONBOARDING_ACTIVE_WORKOUT_KEY);
   };
 
   const handleOnboardingStartWorkout = async (preferredWorkoutDays) => {
@@ -123,12 +129,15 @@ function App() {
     setActiveTab('workout');
     setCurrentView('active-workout');
     setOnboardingFlowActive(true);
+    localStorage.setItem(ONBOARDING_ACTIVE_WORKOUT_KEY, String(result.workoutId));
   };
 
   const handleOnboardingGuideComplete = async () => {
     if (!userId) throw new Error('User profile not ready. Please try again.');
     await completeOnboarding({ userId });
     setOnboardingFlowActive(false);
+    setSelectedWorkoutId(null);
+    localStorage.removeItem(ONBOARDING_ACTIVE_WORKOUT_KEY);
     setActiveTab('dashboard');
     setCurrentView('dashboard');
   };
@@ -162,7 +171,12 @@ function App() {
     if (isAuthenticated && user === undefined) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Loading Profile...</div>;
     if (!isAppAuthenticated) return <AuthPage onCredentialAuth={handleCredentialAuth} />;
 
-    const shouldShowOnboarding = !!activeUser && activeUser.onboardingCompleted !== true && !onboardingFlowActive && authFlow !== 'signin';
+    const persistedOnboardingWorkoutId = localStorage.getItem(ONBOARDING_ACTIVE_WORKOUT_KEY);
+    const onboardingWorkoutId = selectedWorkoutId || activeUser?.onboardingActiveWorkoutId || persistedOnboardingWorkoutId;
+    const shouldResumeOnboardingWorkout = !!activeUser && activeUser.onboardingCompleted !== true && !!onboardingWorkoutId && authFlow !== 'signin';
+    const guideEnabled = (onboardingFlowActive || shouldResumeOnboardingWorkout) && activeUser?.onboardingCompleted !== true;
+    const activeOnboardingWorkoutId = onboardingWorkoutId || null;
+    const shouldShowOnboarding = !!activeUser && activeUser.onboardingCompleted !== true && !guideEnabled && authFlow !== 'signin';
     if (shouldShowOnboarding) {
       return (
         <MotionDiv
@@ -173,6 +187,31 @@ function App() {
           transition={{ duration: 0.25 }}
         >
           <OnboardingPage onComplete={handleOnboardingStartWorkout} />
+        </MotionDiv>
+      );
+    }
+
+    if (guideEnabled && currentView !== 'active-workout') {
+      return (
+        <MotionDiv
+          key="active-onboarding-restored"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ActiveWorkoutPage
+            userId={userId}
+            workoutId={activeOnboardingWorkoutId}
+            workoutName={selectedWorkoutName || 'First Workout'}
+            mode="active"
+            onBack={() => { }}
+            onFinish={() => { }}
+            onViewExercise={handleViewExercise}
+            onSwapExercise={handleSwapExercise}
+            onboardingGuideEnabled={guideEnabled}
+            onOnboardingGuideComplete={handleOnboardingGuideComplete}
+          />
         </MotionDiv>
       );
     }
@@ -237,7 +276,7 @@ function App() {
               }}
               onViewExercise={handleViewExercise}
               onSwapExercise={handleSwapExercise}
-              onboardingGuideEnabled={onboardingFlowActive && activeUser?.onboardingCompleted !== true}
+              onboardingGuideEnabled={guideEnabled}
               onOnboardingGuideComplete={handleOnboardingGuideComplete}
             />
           </MotionDiv>

@@ -155,6 +155,7 @@ export const ensureUser = mutation({
             onboardingCompleted: false,
             onboardingGuideDateKey: getUtcDateKey(),
             onboardingGuideSteps: DEFAULT_GUIDE_STEPS,
+            onboardingActiveWorkoutId: undefined,
             currentStreak: 0,
             longestStreak: 0,
             createdAt: Date.now(),
@@ -198,6 +199,7 @@ export const signUpWithCredentials = mutation({
             onboardingCompleted: false,
             onboardingGuideDateKey: getUtcDateKey(),
             onboardingGuideSteps: DEFAULT_GUIDE_STEPS,
+            onboardingActiveWorkoutId: undefined,
             currentStreak: 0,
             longestStreak: 0,
             createdAt: Date.now(),
@@ -383,6 +385,7 @@ export const completeOnboarding = mutation({
                 createdSuperset: true,
                 separatedSuperset: true,
             },
+            onboardingActiveWorkoutId: undefined,
         });
 
         return { success: true };

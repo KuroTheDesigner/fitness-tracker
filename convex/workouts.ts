@@ -392,6 +392,7 @@ export const bootstrapOnboardingProgram = mutation({
                 createdSuperset: false,
                 separatedSuperset: false,
             },
+            onboardingActiveWorkoutId: firstUpcoming?.workoutId,
         });
 
         return {

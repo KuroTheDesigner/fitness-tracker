@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Info, MoreVertical, CheckCircle2, Trophy, Clock, Plus, Zap, Timer, Trash2, Link2, X, Check, Sparkles } from 'lucide-react';
+import { ChevronLeft, Info, MoreVertical, CheckCircle2, Trophy, Clock, Plus, Zap, Timer, Trash2, Link2, X, Sparkles } from 'lucide-react';
 import RestTimer from '@/components/workout/RestTimer';
 import EffortRating from '@/components/workout/EffortRating';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -438,21 +438,21 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                     <div className="space-y-2 mb-3">
                         <div className="rounded-lg border border-primary/20 bg-background/30 px-2.5 py-2">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
-                                {effectiveGuideState.addedExercise ? <Check size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
+                                {effectiveGuideState.addedExercise ? <CheckCircle2 size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
                                 Add a new exercise
                             </div>
                             <p className="text-[10px] uppercase tracking-wide text-primary/80 mt-1">Use the + button in the top-right corner.</p>
                         </div>
                         <div className="rounded-lg border border-primary/20 bg-background/30 px-2.5 py-2">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
-                                {effectiveGuideState.createdSuperset ? <Check size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
+                                {effectiveGuideState.createdSuperset ? <CheckCircle2 size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
                                 Create a superset
                             </div>
                             <p className="text-[10px] uppercase tracking-wide text-primary/80 mt-1">Open an exercise menu (⋮) and tap “Create Superset”.</p>
                         </div>
                         <div className="rounded-lg border border-primary/20 bg-background/30 px-2.5 py-2">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
-                                {effectiveGuideState.separatedSuperset ? <Check size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
+                                {effectiveGuideState.separatedSuperset ? <CheckCircle2 size={13} className="text-emerald-300" /> : <span className="w-[13px] h-[13px] rounded-full border border-primary/50" />}
                                 Separate a superset exercise
                             </div>
                             <p className="text-[10px] uppercase tracking-wide text-primary/80 mt-1">Open the superset exercise menu (⋮) and tap “Separate Superset”.</p>

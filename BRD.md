@@ -157,7 +157,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 ### Engineering Validation (Pre-Live)
 - Lint passes.
 - Production build passes.
-- End-to-end onboarding/guided-workout validation passes (guided steps completion, add-set persistence, Account sign-out visibility).
+- End-to-end onboarding/guided-workout validation passes (guided steps completion, add-set persistence, mid-flow reload resume + guide-progress persistence, Account sign-out visibility).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

@@ -21,6 +21,7 @@ export default defineSchema({
             createdSuperset: v.boolean(),
             separatedSuperset: v.boolean(),
         })),
+        onboardingActiveWorkoutId: v.optional(v.id("workouts")),
         preferredWorkoutDays: v.optional(v.array(v.string())),
         currentStreak: v.optional(v.number()),
         longestStreak: v.optional(v.number()),
