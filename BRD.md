@@ -147,8 +147,8 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-08 Coming soon experience | Delivered. |
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
 | BR-11 Account settings experience | Initial shell delivered (media upload persistence pending). |
-| BR-17 New-user onboarding + first workout creation | Delivered in codebase; pending production verification. |
-| BR-18 Auth experience expansion (Google + Username/PIN) | Delivered in codebase; pending production verification. |
+| BR-17 New-user onboarding + first workout creation | Partially production-verified (onboarding entry verified; full first-workout guided checklist pass pending). |
+| BR-18 Auth experience expansion (Google + Username/PIN) | Delivered and production-verified (separate sign-in/sign-up, credential auth, username prefill, onboarding bypass). |
 
 ### Notes
 - This status reflects implemented work in the current codebase and local validation.

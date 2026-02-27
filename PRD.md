@@ -5,10 +5,10 @@
 | Auth: Google sign-in flow | Shoo + Google sign-in UI and callback flow are wired and reachable from app entry. | Complete (tested) |
 | Auth: Sign-out flow | Global sign-out control exists and returns user to auth screen. | Complete (tested) |
 | Auth: User auto-provisioning | First-login user creation is implemented via `users.ensureUser`. | Complete (untested) |
-| Auth: Separate sign-in/sign-up pages | Sign-in and sign-up have distinct UI modes with separate Google CTAs and direct navigation between modes. | Complete (untested) |
-| Auth: Username + PIN account flow | Users can sign up/sign in with first name + username + 4-digit PIN, with username prefill of last user and no PIN prefill. | Complete (untested) |
-| Auth: PIN safety baseline | PIN is validated to 4 digits and stored hashed+salted with generic credential error responses. | Complete (untested) |
-| Auth: Sign-in onboarding bypass | Returning sign-ins load profile/saved data without forcing onboarding, while sign-ups still enter onboarding. | Complete (untested) |
+| Auth: Separate sign-in/sign-up pages | Sign-in and sign-up have distinct UI modes with separate Google CTAs and direct navigation between modes. | Complete (tested) |
+| Auth: Username + PIN account flow | Users can sign up/sign in with first name + username + 4-digit PIN, with username prefill of last user and no PIN prefill. | Complete (tested) |
+| Auth: PIN safety baseline | PIN is validated to 4 digits and stored hashed+salted with generic credential error responses. | Complete (tested) |
+| Auth: Sign-in onboarding bypass | Returning sign-ins load profile/saved data without forcing onboarding, while sign-ups still enter onboarding. | Complete (tested) |
 | Auth: Credential lockout hardening | Implement brute-force protection for username/PIN sign-in: 10 failed attempts → 30-minute lockout window. | yet to start |
 | Bottom navigation foundation | App has a 5-item bottom nav and tab switching behavior. | Complete (tested) |
 | Workout tab base page shell | Workout tab view exists with hero/schedule structure and skeleton states. | in progress |
@@ -75,7 +75,7 @@
 | Seed/admin safety hardening | Protect or remove seed/admin-like mutations from production paths. | yet to start |
 | Schema validation hardening | Re-enable and enforce schema validation for data integrity and safer iteration. | yet to start |
 | New-user workout bootstrap | Ensure newly authenticated users always get an initial program/schedule so workout tab does not remain in unresolved loading state. | Complete (untested) |
-| New-user onboarding flow | First-time users must complete onboarding slideshow/questionnaire before normal app usage. | Complete (untested) |
+| New-user onboarding flow | First-time users must complete onboarding slideshow/questionnaire before normal app usage. | Complete (tested) |
 | Onboarding workout-day selection | Onboarding must collect preferred workout days of week and persist the selection. | Complete (untested) |
 | First workout auto-creation flow | After onboarding, route user directly into their first upcoming workout logging session to build initial workout content. | Complete (untested) |
 | First-workout guided creation | In first workout flow, guide user through adding an exercise, creating a superset, and separating a superset. | Complete (untested) |
