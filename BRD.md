@@ -116,6 +116,15 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
   - separating a superset.
 - After completing this first workout creation experience, user is routed to Dashboard.
 
+### BR-18: Auth Experience Expansion (Google + Username/PIN)
+- Sign-in page must include a path to a dedicated sign-up page (or equivalent separate sign-up mode).
+- Sign-in and sign-up each have their own Google CTA.
+- Add direct credential account flow using first name, username, and 4-digit PIN.
+- Username should be prefilled from last login where possible; PIN must never be prefilled.
+- Returning sign-ins should load existing profile/saved data and skip onboarding.
+- New sign-ups should continue through onboarding.
+- PIN handling must follow secure baseline practices (strict validation, salted hash storage, generic auth errors).
+
 ## Out of Scope for This BRD Revision
 - Detailed technical implementation steps.
 - Sprint sequencing and estimation.
@@ -138,6 +147,8 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-08 Coming soon experience | Delivered. |
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
 | BR-11 Account settings experience | Initial shell delivered (media upload persistence pending). |
+| BR-17 New-user onboarding + first workout creation | Delivered in codebase; pending production verification. |
+| BR-18 Auth experience expansion (Google + Username/PIN) | Delivered in codebase; pending production verification. |
 
 ### Notes
 - This status reflects implemented work in the current codebase and local validation.
