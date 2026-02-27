@@ -56,6 +56,8 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
     const [exerciseSearch, setExerciseSearch] = useState('');
     const [guideState, setGuideState] = useState(DEFAULT_GUIDE_STATE);
     const [addingSetExerciseId, setAddingSetExerciseId] = useState(null);
+    const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false);
+    const [onboardingActionError, setOnboardingActionError] = useState('');
 
     // Elapsed timer effect
     useEffect(() => {
@@ -339,6 +341,20 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
     const effectiveGuideState = guideState;
     const guideCompleted = effectiveGuideState.addedExercise && effectiveGuideState.createdSuperset && effectiveGuideState.separatedSuperset;
     const guideCompletedCount = [effectiveGuideState.addedExercise, effectiveGuideState.createdSuperset, effectiveGuideState.separatedSuperset].filter(Boolean).length;
+    const guideFinishDisabled = !guideCompleted || isCompletingOnboarding;
+
+    const handleFinishOnboarding = async () => {
+        if (guideFinishDisabled || !onOnboardingGuideComplete) return;
+        setOnboardingActionError('');
+        setIsCompletingOnboarding(true);
+        try {
+            await onOnboardingGuideComplete();
+        } catch (error) {
+            setOnboardingActionError(error?.message || 'Could not finish onboarding. Please try again.');
+        } finally {
+            setIsCompletingOnboarding(false);
+        }
+    };
 
     const handleAddExercise = async (exerciseId) => {
         if (!workoutId || isReadOnly) return;
@@ -388,7 +404,14 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
     return (
         <div className="screen animate-in fade-in slide-in-from-bottom-4 duration-500 pb-8 relative min-h-screen">
             <header className="flex justify-between items-center py-2 mb-6">
-                <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full" aria-label="Back to workout overview">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onBack}
+                    className={`rounded-full ${onboardingGuideEnabled ? 'opacity-45 cursor-not-allowed' : ''}`}
+                    aria-label={onboardingGuideEnabled ? 'Onboarding in progress' : 'Back to workout overview'}
+                    disabled={onboardingGuideEnabled}
+                >
                     <ChevronLeft size={24} />
                 </Button>
                 <div className="text-center">
@@ -460,12 +483,13 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                     </div>
                     {!guideCompleted && <p className="text-[11px] text-primary/90 mb-2">Complete all 3 steps to finish onboarding.</p>}
                     <Button
-                        className={`w-full h-9 ${!guideCompleted ? 'bg-muted text-muted-foreground border border-border hover:bg-muted cursor-not-allowed shadow-none' : ''}`}
-                        disabled={!guideCompleted}
-                        onClick={() => guideCompleted && onOnboardingGuideComplete && onOnboardingGuideComplete()}
+                        className={`w-full h-9 ${guideFinishDisabled ? 'bg-muted text-muted-foreground border border-border hover:bg-muted cursor-not-allowed shadow-none' : ''}`}
+                        disabled={guideFinishDisabled}
+                        onClick={handleFinishOnboarding}
                     >
-                        Finish Onboarding
+                        {isCompletingOnboarding ? 'Finishing...' : 'Finish Onboarding'}
                     </Button>
+                    {onboardingActionError && <p className="text-[11px] text-red-300 mt-2">{onboardingActionError}</p>}
                 </div>
             )}
 
@@ -506,180 +530,191 @@ const ActiveWorkoutPage = ({ userId, workoutId, workoutName, mode = 'active', on
                         )}
 
                         <div className={group.group ? "pt-2" : ""}>
-                            {group.exercises.map((we, index) => (
-                                <div key={we._id} className={`${index !== group.exercises.length - 1 ? 'mb-12 pb-8 border-b border-primary/10' : ''}`}>
-                                    <div className="relative mb-4 overflow-hidden rounded-xl">
-                                        <div className="absolute inset-y-0 left-0 w-full bg-red-600/20 border border-red-500/40 rounded-xl flex items-center px-4">
-                                            <Trash2 size={14} className="text-red-300" />
-                                            <span className="ml-2 text-[10px] uppercase tracking-widest font-black text-red-200">Swipe to remove</span>
-                                        </div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex-1 pr-4">
-                                            <h3 className="text-base font-black uppercase leading-tight tracking-tight mb-1 accent-text">
-                                                {we.exercise?.name || 'Unknown Exercise'}
-                                            </h3>
-                                            <div className="flex gap-2">
-                                                <Button variant="link" className="text-[10px] text-muted-foreground p-0 h-auto uppercase font-bold">
-                                                    Add Notes
-                                                </Button>
-                                                <Button
-                                                    variant="link"
-                                                    className="text-[10px] text-primary p-0 h-auto uppercase font-bold"
-                                                    onClick={() => onViewExercise && onViewExercise(we)}
-                                                >
-                                                    <Info size={10} className="mr-1" /> How To
-                                                </Button>
-                                                <Button
-                                                    variant="link"
-                                                    className="text-[10px] text-primary p-0 h-auto uppercase font-bold ml-2"
-                                                    onClick={() => onSwapExercise && onSwapExercise(we)}
-                                                    disabled={isReadOnly}
-                                                >
-                                                    Swap
-                                                </Button>
+                            {group.exercises.map((we, index) => {
+                                const swipeOffset = swipeOffsets[we._id] || 0;
+                                const showSwipeHint = Math.abs(swipeOffset) > 8;
+
+                                return (
+                                    <div key={we._id} className={`${index !== group.exercises.length - 1 ? 'mb-12 pb-8 border-b border-primary/10' : ''}`}>
+                                        <div className="relative mb-4 overflow-hidden rounded-xl">
+                                            <div className={`absolute inset-y-0 left-0 w-full bg-red-600/20 border border-red-500/40 rounded-xl flex items-center px-4 transition-opacity duration-200 ${showSwipeHint ? 'opacity-100' : 'opacity-0'}`}>
+                                                <Trash2 size={14} className="text-red-300" />
+                                                <span className="ml-2 text-[10px] uppercase tracking-widest font-black text-red-200">Swipe to remove</span>
+                                            </div>
+
+                                            <div
+                                                className="relative"
+                                                onTouchStart={(e) => startSwipe(we._id, e)}
+                                                onTouchMove={moveSwipe}
+                                                onTouchEnd={() => endSwipe(we)}
+                                                onTouchCancel={() => {
+                                                    setSwipeOffsets((prev) => ({ ...prev, [we._id]: 0 }));
+                                                    setActiveTouch(null);
+                                                }}
+                                                style={{ transform: `translateX(${swipeOffset}px)` }}
+                                            >
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex-1 pr-4">
+                                                        <h3 className="text-base font-black uppercase leading-tight tracking-tight mb-1 accent-text">
+                                                            {we.exercise?.name || 'Unknown Exercise'}
+                                                        </h3>
+                                                        <div className="flex gap-2">
+                                                            <Button variant="link" className="text-[10px] text-muted-foreground p-0 h-auto uppercase font-bold">
+                                                                Add Notes
+                                                            </Button>
+                                                            <Button
+                                                                variant="link"
+                                                                className="text-[10px] text-primary p-0 h-auto uppercase font-bold"
+                                                                onClick={() => onViewExercise && onViewExercise(we)}
+                                                            >
+                                                                <Info size={10} className="mr-1" /> How To
+                                                            </Button>
+                                                            <Button
+                                                                variant="link"
+                                                                className="text-[10px] text-primary p-0 h-auto uppercase font-bold ml-2"
+                                                                onClick={() => onSwapExercise && onSwapExercise(we)}
+                                                                disabled={isReadOnly}
+                                                            >
+                                                                Swap
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="relative">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => setMenuExerciseId((prev) => (prev === we._id ? null : we._id))}
+                                                            aria-label={`Open actions for ${we.exercise?.name || 'exercise'}`}
+                                                        >
+                                                            <MoreVertical size={16} />
+                                                        </Button>
+                                                        {menuExerciseId === we._id && !isReadOnly && (
+                                                            <div className="absolute right-0 top-10 z-40 w-44 rounded-lg border border-border bg-background shadow-xl p-1">
+                                                                {!we.supersetGroup && (
+                                                                    <button
+                                                                        className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-secondary flex items-center gap-2"
+                                                                        onClick={() => openSupersetCreator(we)}
+                                                                    >
+                                                                        <Link2 size={14} /> Create Superset
+                                                                    </button>
+                                                                )}
+                                                                {onboardingGuideEnabled && we.supersetGroup && (
+                                                                    <button
+                                                                        className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-secondary flex items-center gap-2"
+                                                                        onClick={() => handleSeparateSuperset(we._id)}
+                                                                    >
+                                                                        <X size={14} /> Separate Superset
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-red-500/15 text-red-300 flex items-center gap-2"
+                                                                    onClick={() => setPendingRemoval(we)}
+                                                                >
+                                                                    <Trash2 size={14} /> Remove Exercise
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="grid grid-cols-5 gap-2 px-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">
+                                                        <div className="text-center">SET</div>
+                                                        <div className="col-span-1 text-center">TARGET</div>
+                                                        <div className="text-center">KG</div>
+                                                        <div className="text-center">REPS</div>
+                                                        <div className="text-right pr-2">✓</div>
+                                                    </div>
+
+                                                    {Array.from({ length: we.targetSets }).map((_, idx) => {
+                                                        const setKey = `${we._id}-${idx}`;
+                                                        const setData = resolvedSetsState[setKey] || { weight: '', reps: '', completed: false, isPR: false };
+                                                        const isPR = setData.isPR;
+
+                                                        return (
+                                                            <div
+                                                                key={idx}
+                                                                className={`grid grid-cols-5 gap-2 items-center p-2 rounded-lg transition-all duration-300 ${setData.completed
+                                                                    ? isPR ? 'bg-[#ffd700]/10 border border-[#ffd700]/30 shadow-[inset_0_0_15px_rgba(255,215,0,0.1)]' : 'bg-primary/10 border border-primary/20'
+                                                                    : 'bg-background/60 border border-transparent shadow-sm'
+                                                                    }`}
+                                                            >
+                                                                <div className="text-center font-display text-lg flex flex-col items-center justify-center">
+                                                                    <span className={setData.completed && !isPR ? 'text-primary' : isPR ? 'text-[#ffd700]' : ''}>
+                                                                        {idx + 1}{group.group || ''}
+                                                                    </span>
+                                                                    {isPR && <Trophy size={10} className="text-[#ffd700] -mt-1" />}
+                                                                </div>
+                                                                <div className="text-center text-[11px] font-bold text-muted-foreground leading-none">
+                                                                    {we.targetReps}
+                                                                </div>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={setData.weight}
+                                                                    onChange={(e) => handleInputChange(we._id, idx, 'weight', e.target.value)}
+                                                                    placeholder="0"
+                                                                    className={`h-9 text-center border-none font-bold text-sm p-0 transition-colors ${setData.completed
+                                                                        ? 'bg-transparent text-foreground'
+                                                                        : 'bg-muted/50 focus:bg-background focus:ring-1 focus:ring-primary/50'
+                                                                        }`}
+                                                                    disabled={setData.completed || isReadOnly}
+                                                                />
+                                                                <Input
+                                                                    type="number"
+                                                                    value={setData.reps}
+                                                                    onChange={(e) => handleInputChange(we._id, idx, 'reps', e.target.value)}
+                                                                    placeholder="0"
+                                                                    className={`h-9 text-center border-none font-bold text-sm p-0 transition-colors ${setData.completed
+                                                                        ? 'bg-transparent text-foreground'
+                                                                        : 'bg-muted/50 focus:bg-background focus:ring-1 focus:ring-primary/50'
+                                                                        }`}
+                                                                    disabled={setData.completed || isReadOnly}
+                                                                />
+                                                                <div className="flex justify-end pr-1">
+                                                                    <button
+                                                                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${setData.completed
+                                                                            ? isPR ? 'bg-[#ffd700] text-black shadow-[0_0_10px_rgba(255,215,0,0.4)]' : 'bg-primary text-black shadow-[0_0_10px_rgba(0,255,102,0.3)]'
+                                                                            : 'bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95'
+                                                                            }`}
+                                                                        onClick={() => handleSetComplete(we, idx)}
+                                                                        disabled={isReadOnly}
+                                                                        aria-label={`Toggle completion for set ${idx + 1} of ${we.exercise?.name || 'exercise'}`}
+                                                                    >
+                                                                        {setData.completed ? <CheckCircle2 size={18} /> : <div className="w-2 h-2 rounded-full bg-current opacity-30" />}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                <div className="flex gap-3 mt-4">
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="flex-1 h-9 text-[10px] font-bold tracking-widest uppercase gap-2 bg-background/50 border border-border/50 hover:bg-secondary"
+                                                        onClick={() => setActiveRestTimer({ seconds: we.restSeconds || 120 })}
+                                                        disabled={isReadOnly}
+                                                    >
+                                                        <Clock size={14} className="text-primary" /> REST: {Math.floor((we.restSeconds || 120) / 60)}:{String((we.restSeconds || 120) % 60).padStart(2, '0')}
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="flex-1 h-9 text-[10px] font-bold tracking-widest uppercase gap-2 bg-background/50 border border-border/50 hover:bg-secondary"
+                                                        disabled={isReadOnly || addingSetExerciseId === we._id || we.targetSets >= 12}
+                                                        onClick={() => handleAddSet(we._id)}
+                                                    >
+                                                        <Plus size={14} className="text-primary" /> {we.targetSets >= 12 ? 'SET LIMIT' : (addingSetExerciseId === we._id ? 'ADDING...' : 'ADD SET')}
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="relative">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => setMenuExerciseId((prev) => (prev === we._id ? null : we._id))}
-                                                aria-label={`Open actions for ${we.exercise?.name || 'exercise'}`}
-                                            >
-                                                <MoreVertical size={16} />
-                                            </Button>
-                                            {menuExerciseId === we._id && !isReadOnly && (
-                                                <div className="absolute right-0 top-10 z-40 w-44 rounded-lg border border-border bg-background shadow-xl p-1">
-                                                    {!we.supersetGroup && (
-                                                        <button
-                                                            className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-secondary flex items-center gap-2"
-                                                            onClick={() => openSupersetCreator(we)}
-                                                        >
-                                                            <Link2 size={14} /> Create Superset
-                                                        </button>
-                                                    )}
-                                                    {onboardingGuideEnabled && we.supersetGroup && (
-                                                        <button
-                                                            className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-secondary flex items-center gap-2"
-                                                            onClick={() => handleSeparateSuperset(we._id)}
-                                                        >
-                                                            <X size={14} /> Separate Superset
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        className="w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-red-500/15 text-red-300 flex items-center gap-2"
-                                                        onClick={() => setPendingRemoval(we)}
-                                                    >
-                                                        <Trash2 size={14} /> Remove Exercise
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
                                     </div>
-                                    </div>
-
-                                    {/* Sets Grid */}
-                                    <div className="space-y-2">
-                                        <div className="grid grid-cols-5 gap-2 px-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">
-                                            <div className="text-center">SET</div>
-                                            <div className="col-span-1 text-center">TARGET</div>
-                                            <div className="text-center">KG</div>
-                                            <div className="text-center">REPS</div>
-                                            <div className="text-right pr-2">✓</div>
-                                        </div>
-
-                                        {Array.from({ length: we.targetSets }).map((_, idx) => {
-                                            const setKey = `${we._id}-${idx}`;
-                                            const setData = resolvedSetsState[setKey] || { weight: '', reps: '', completed: false, isPR: false };
-
-                                            // Handle PR highlighting
-                                            const isPR = setData.isPR;
-
-                                            return (
-                                                <div
-                                                    key={idx}
-                                                    onTouchStart={(e) => startSwipe(we._id, e)}
-                                                    onTouchMove={moveSwipe}
-                                                    onTouchEnd={() => endSwipe(we)}
-                                                    className={`grid grid-cols-5 gap-2 items-center p-2 rounded-lg transition-all duration-300 ${setData.completed
-                                                        ? isPR ? 'bg-[#ffd700]/10 border border-[#ffd700]/30 shadow-[inset_0_0_15px_rgba(255,215,0,0.1)]' : 'bg-primary/10 border border-primary/20'
-                                                        : 'bg-background/60 border border-transparent shadow-sm'
-                                                        }`}
-                                                    style={{ transform: `translateX(${swipeOffsets[we._id] || 0}px)` }}
-                                                >
-                                                    <div className="text-center font-display text-lg flex flex-col items-center justify-center">
-                                                        <span className={setData.completed && !isPR ? 'text-primary' : isPR ? 'text-[#ffd700]' : ''}>
-                                                            {idx + 1}{group.group || ''}
-                                                        </span>
-                                                        {isPR && <Trophy size={10} className="text-[#ffd700] -mt-1" />}
-                                                    </div>
-                                                    <div className="text-center text-[11px] font-bold text-muted-foreground leading-none">
-                                                        {we.targetReps}
-                                                    </div>
-                                                    <Input
-                                                        type="number"
-                                                        value={setData.weight}
-                                                        onChange={(e) => handleInputChange(we._id, idx, 'weight', e.target.value)}
-                                                        placeholder="0"
-                                                        className={`h-9 text-center border-none font-bold text-sm p-0 transition-colors ${setData.completed
-                                                            ? 'bg-transparent text-foreground'
-                                                            : 'bg-muted/50 focus:bg-background focus:ring-1 focus:ring-primary/50'
-                                                            }`}
-                                                        disabled={setData.completed || isReadOnly}
-                                                    />
-                                                    <Input
-                                                        type="number"
-                                                        value={setData.reps}
-                                                        onChange={(e) => handleInputChange(we._id, idx, 'reps', e.target.value)}
-                                                        placeholder="0"
-                                                        className={`h-9 text-center border-none font-bold text-sm p-0 transition-colors ${setData.completed
-                                                            ? 'bg-transparent text-foreground'
-                                                            : 'bg-muted/50 focus:bg-background focus:ring-1 focus:ring-primary/50'
-                                                            }`}
-                                                        disabled={setData.completed || isReadOnly}
-                                                    />
-                                                    <div className="flex justify-end pr-1">
-                                                        <button
-                                                            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${setData.completed
-                                                                ? isPR ? 'bg-[#ffd700] text-black shadow-[0_0_10px_rgba(255,215,0,0.4)]' : 'bg-primary text-black shadow-[0_0_10px_rgba(0,255,102,0.3)]'
-                                                                : 'bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95'
-                                                                }`}
-                                                            onClick={() => handleSetComplete(we, idx)}
-                                                            disabled={isReadOnly}
-                                                            aria-label={`Toggle completion for set ${idx + 1} of ${we.exercise?.name || 'exercise'}`}
-                                                        >
-                                                            {setData.completed ? <CheckCircle2 size={18} /> : <div className="w-2 h-2 rounded-full bg-current opacity-30" />}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex gap-3 mt-4">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="flex-1 h-9 text-[10px] font-bold tracking-widest uppercase gap-2 bg-background/50 border border-border/50 hover:bg-secondary"
-                                            onClick={() => setActiveRestTimer({ seconds: we.restSeconds || 120 })}
-                                            disabled={isReadOnly}
-                                        >
-                                            <Clock size={14} className="text-primary" /> REST: {Math.floor((we.restSeconds || 120) / 60)}:{(we.restSeconds || 120) % 60 === 0 ? '00' : (we.restSeconds || 120) % 60}
-                                        </Button>
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="flex-1 h-9 text-[10px] font-bold tracking-widest uppercase gap-2 bg-background/50 border border-border/50 hover:bg-secondary"
-                                            disabled={isReadOnly || addingSetExerciseId === we._id || we.targetSets >= 12}
-                                            onClick={() => handleAddSet(we._id)}
-                                        >
-                                            <Plus size={14} className="text-primary" /> {we.targetSets >= 12 ? 'SET LIMIT' : (addingSetExerciseId === we._id ? 'ADDING...' : 'ADD SET')}
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 ))}

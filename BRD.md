@@ -147,7 +147,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-08 Coming soon experience | Delivered. |
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
 | BR-11 Account settings experience | Initial shell + in-page sign-out delivered and locally validated (media upload persistence pending). |
-| BR-17 New-user onboarding + first workout creation | Delivered and locally validated end-to-end (daily-reset guide persistence + add-set persistence included). |
+| BR-17 New-user onboarding + first workout creation | Delivered and locally validated end-to-end (daily-reset guide persistence + add-set persistence included), plus guided-workout UI polish for swipe affordance behavior, onboarding completion CTA pending state, and onboarding-safe navigation. |
 | BR-18 Auth experience expansion (Google + Username/PIN) | Delivered and production-verified (separate sign-in/sign-up, credential auth, username prefill, onboarding bypass). |
 
 ### Notes
@@ -158,6 +158,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 - Lint passes.
 - Production build passes.
 - End-to-end onboarding/guided-workout validation passes (guided steps completion, add-set persistence, mid-flow reload resume + guide-progress persistence, Account sign-out visibility).
+- Guided first-workout UI re-validation passes (fresh-account path, add-exercise modal/search/empty state, create+separate superset flow, and finish-onboarding transition feedback).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

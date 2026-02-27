@@ -46,7 +46,7 @@
 | Superset drag-and-drop operations | Support drag to create superset, drag into existing superset, drag out of superset, and reordering via drag. | yet to start |
 | Superset split handling policy | No separate split action; rely on drag in/out mechanics to split/restructure supersets. | yet to start |
 | Remove exercise via menu | Add remove exercise action in 3-dot menu with confirmations/safe behavior. | Complete (untested) |
-| Swipe-to-remove safety interaction | Add left/right swipe remove with visible red container and minimum swipe threshold before delete. | Complete (untested) |
+| Swipe-to-remove safety interaction | Add left/right swipe remove with visible red container and minimum swipe threshold before delete. | Complete (tested) |
 | 3-dot menu feature parity | Implement full menu actions needed by product flow (swap/form guide/history/reorder/remove and final policy decisions). | in progress |
 | Swap screen foundation | Swap page exists with search, all/muscle grouping, and custom exercise creation. | Complete (untested) |
 | Recommended alternatives logic | Implement recommendations for swaps based on same muscle + same emphasized sub-region. | yet to start |
@@ -245,11 +245,13 @@
 | Dashboard surface | Implemented initial premium shell for landing page direction. |
 | Account settings surface | Implemented account page shell with banner area and profile photo edit entry points. |
 | Account sign-out placement | Implemented sign-out in Account settings and removed floating global sign-out collision on workout UI. |
+| Guided first-workout UI polish | Implemented onboarding-safe back-nav disable, swipe affordance containment, onboarding finish pending/error state, and rest timer formatting polish. |
 
 ### Validation Snapshot (Pre-Live)
 - `npm run lint`: pass (2 existing warnings in generated Convex files).
 - `npm run build`: pass.
 - End-to-end onboarding validation: pass (add-set persistence, guided checklist completion flow, mid-flow reload restoration into guided workout with persisted progress, and account-page sign-out placement).
+- Guided first-workout onboarding UI re-validation: pass (fresh-account path, add-exercise modal/search/empty state, create+separate superset flow, finish-onboarding pending state/transition, and swipe affordance behavior).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).
