@@ -17,6 +17,12 @@ import AccountPage from './pages/AccountPage';
 import DashboardPage from './pages/DashboardPage';
 import OnboardingPage from './pages/OnboardingPage';
 import BottomNav from './components/layout/BottomNav';
+import {
+  AUTH_LAST_FLOW_KEY,
+  AUTH_LAST_USERNAME_KEY,
+  AUTH_PENDING_INTENT_KEY,
+  AUTH_SESSION_TOKEN_KEY,
+} from './lib/authStorage';
 import './index.css';
 
 function App() {
@@ -29,24 +35,82 @@ function App() {
   const [selectedDayStatus, setSelectedDayStatus] = useState('current');
   const [selectedWorkoutCompleted, setSelectedWorkoutCompleted] = useState(false);
   const [onboardingFlowActive, setOnboardingFlowActive] = useState(false);
+  const [credentialSessionToken, setCredentialSessionToken] = useState(() => localStorage.getItem(AUTH_SESSION_TOKEN_KEY));
 
   const { isAuthenticated, isLoading } = useConvexAuth();
 
-  // Get current active user from convex DB natively
   const user = useQuery(api.users.current);
-  const userId = user?._id;
+  const credentialUser = useQuery(
+    api.users.getCurrentBySession,
+    credentialSessionToken ? { sessionToken: credentialSessionToken } : 'skip'
+  );
+
+  const activeUser = isAuthenticated ? user : credentialUser;
+  const userId = activeUser?._id;
+  const authFlow = (() => {
+    const pending = localStorage.getItem(AUTH_PENDING_INTENT_KEY);
+    if (pending === 'signin' || pending === 'signup') return pending;
+    return localStorage.getItem(AUTH_LAST_FLOW_KEY) || 'unknown';
+  })();
 
   const swapExercise = useMutation(api.exercises.swapExercise);
   const ensureUser = useMutation(api.users.ensureUser);
+  const signOutSession = useMutation(api.users.signOutSession);
   const bootstrapOnboardingProgram = useMutation(api.workouts.bootstrapOnboardingProgram);
   const completeOnboarding = useMutation(api.users.completeOnboarding);
 
-  // Auto-create user record on first sign-in
   useEffect(() => {
-    if (isAuthenticated && user === null) {
-      ensureUser();
+    if (!isAuthenticated || user === undefined) return;
+
+    const pendingIntent = localStorage.getItem(AUTH_PENDING_INTENT_KEY);
+
+    if (user === null) {
+      if (pendingIntent === 'signin') {
+        localStorage.setItem(AUTH_LAST_FLOW_KEY, 'signin');
+        localStorage.removeItem(AUTH_PENDING_INTENT_KEY);
+        signOut();
+        return;
+      }
+
+      ensureUser({ allowCreate: true });
+      return;
+    }
+
+    if (pendingIntent === 'signin' || pendingIntent === 'signup') {
+      localStorage.setItem(AUTH_LAST_FLOW_KEY, pendingIntent);
+      localStorage.removeItem(AUTH_PENDING_INTENT_KEY);
     }
   }, [isAuthenticated, user, ensureUser]);
+
+  const isCredentialLoading = !isAuthenticated && !!credentialSessionToken && credentialUser === undefined;
+  const isAppAuthenticated = isAuthenticated || !!credentialUser;
+
+  const handleCredentialAuth = ({ sessionToken, flow, username }) => {
+    if (!sessionToken) return;
+    localStorage.setItem(AUTH_SESSION_TOKEN_KEY, sessionToken);
+    localStorage.setItem(AUTH_LAST_FLOW_KEY, flow);
+    localStorage.setItem(AUTH_LAST_USERNAME_KEY, username);
+    localStorage.removeItem(AUTH_PENDING_INTENT_KEY);
+    setCredentialSessionToken(sessionToken);
+  };
+
+  const handleSignOut = async () => {
+    if (credentialSessionToken) {
+      try {
+        await signOutSession({ sessionToken: credentialSessionToken });
+      } catch {
+        // no-op
+      }
+      localStorage.removeItem(AUTH_SESSION_TOKEN_KEY);
+      setCredentialSessionToken(null);
+    }
+
+    if (isAuthenticated) {
+      signOut();
+    }
+
+    localStorage.removeItem(AUTH_PENDING_INTENT_KEY);
+  };
 
   const handleOnboardingStartWorkout = async (preferredWorkoutDays) => {
     if (!userId) throw new Error('User profile not ready. Please try again.');
@@ -95,11 +159,11 @@ function App() {
   };
 
   const renderView = () => {
-    if (isLoading) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Initializing System...</div>;
-    if (!isAuthenticated) return <AuthPage />;
-    if (user === undefined) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Loading Profile...</div>;
+    if (isLoading || isCredentialLoading) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Initializing System...</div>;
+    if (isAuthenticated && user === undefined) return <div className="min-h-screen bg-background text-white flex items-center justify-center font-mono text-xs uppercase tracking-widest animate-pulse">Loading Profile...</div>;
+    if (!isAppAuthenticated) return <AuthPage onCredentialAuth={handleCredentialAuth} />;
 
-    const shouldShowOnboarding = !!user && user.onboardingCompleted !== true && !onboardingFlowActive;
+    const shouldShowOnboarding = !!activeUser && activeUser.onboardingCompleted !== true && !onboardingFlowActive && authFlow !== 'signin';
     if (shouldShowOnboarding) {
       return (
         <MotionDiv
@@ -174,7 +238,7 @@ function App() {
               }}
               onViewExercise={handleViewExercise}
               onSwapExercise={handleSwapExercise}
-              onboardingGuideEnabled={onboardingFlowActive && user?.onboardingCompleted !== true}
+              onboardingGuideEnabled={onboardingFlowActive && activeUser?.onboardingCompleted !== true}
               onOnboardingGuideComplete={handleOnboardingGuideComplete}
             />
           </MotionDiv>
@@ -253,7 +317,7 @@ function App() {
       case 'account':
         return (
           <MotionDiv key="account" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <AccountPage user={user} />
+            <AccountPage user={activeUser} />
           </MotionDiv>
         );
       case 'dashboard':
@@ -279,9 +343,9 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center overflow-x-hidden">
       {/* Always-visible sign-out button */}
-      {isAuthenticated && (
+      {isAppAuthenticated && (
         <button
-          onClick={signOut}
+          onClick={handleSignOut}
           className="fixed top-4 right-4 z-[100] w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-red-500 hover:border-red-500/50 transition-all"
           title="Sign Out"
         >
@@ -294,7 +358,7 @@ function App() {
         </AnimatePresence>
       </main>
 
-      {user?.onboardingCompleted === true && (
+      {(activeUser?.onboardingCompleted === true || authFlow === 'signin') && (
         <BottomNav
           activeTab={activeTab}
           onTabChange={(tab) => {

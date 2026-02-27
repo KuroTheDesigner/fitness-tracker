@@ -5,7 +5,14 @@ export default defineSchema({
     users: defineTable({
         shooSubject: v.optional(v.string()), // pairwise_sub from Shoo (Google identity)
         name: v.optional(v.string()),
+        displayName: v.optional(v.string()),
         email: v.optional(v.string()),
+        username: v.optional(v.string()),
+        usernameNormalized: v.optional(v.string()),
+        credentialPinHash: v.optional(v.string()),
+        credentialPinSalt: v.optional(v.string()),
+        credentialPinIterations: v.optional(v.number()),
+        authProviders: v.optional(v.array(v.string())),
         onboardingCompleted: v.optional(v.boolean()),
         onboardingCompletedAt: v.optional(v.number()),
         preferredWorkoutDays: v.optional(v.array(v.string())),
@@ -13,7 +20,16 @@ export default defineSchema({
         longestStreak: v.optional(v.number()),
         lastWorkoutDate: v.optional(v.string()), // ISO date string
         createdAt: v.optional(v.number()),
-    }).index("by_shooSubject", ["shooSubject"]),
+    }).index("by_shooSubject", ["shooSubject"])
+        .index("by_usernameNormalized", ["usernameNormalized"]),
+
+    credentialAuthSessions: defineTable({
+        userId: v.id("users"),
+        tokenHash: v.string(),
+        expiresAt: v.number(),
+        createdAt: v.number(),
+    }).index("by_tokenHash", ["tokenHash"])
+        .index("by_userId", ["userId"]),
 
     programs: defineTable({
         name: v.string(),

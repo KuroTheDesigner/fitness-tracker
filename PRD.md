@@ -5,6 +5,7 @@
 | Auth: Google sign-in flow | Shoo + Google sign-in UI and callback flow are wired and reachable from app entry. | Complete (tested) |
 | Auth: Sign-out flow | Global sign-out control exists and returns user to auth screen. | Complete (tested) |
 | Auth: User auto-provisioning | First-login user creation is implemented via `users.ensureUser`. | Complete (untested) |
+| Auth: Credential lockout hardening | Implement brute-force protection for username/PIN sign-in: 10 failed attempts → 30-minute lockout window. | yet to start |
 | Bottom navigation foundation | App has a 5-item bottom nav and tab switching behavior. | Complete (tested) |
 | Workout tab base page shell | Workout tab view exists with hero/schedule structure and skeleton states. | in progress |
 | Progress tab base page | Analytics/progress page exists with stats, charts, and PR section scaffolding. | Complete (tested) |
