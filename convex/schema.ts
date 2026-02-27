@@ -15,6 +15,12 @@ export default defineSchema({
         authProviders: v.optional(v.array(v.string())),
         onboardingCompleted: v.optional(v.boolean()),
         onboardingCompletedAt: v.optional(v.number()),
+        onboardingGuideDateKey: v.optional(v.string()),
+        onboardingGuideSteps: v.optional(v.object({
+            addedExercise: v.boolean(),
+            createdSuperset: v.boolean(),
+            separatedSuperset: v.boolean(),
+        })),
         preferredWorkoutDays: v.optional(v.array(v.string())),
         currentStreak: v.optional(v.number()),
         longestStreak: v.optional(v.number()),

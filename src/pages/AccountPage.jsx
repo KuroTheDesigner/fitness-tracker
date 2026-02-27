@@ -1,9 +1,9 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Camera, ImagePlus, Mail, User } from 'lucide-react';
+import { Camera, ImagePlus, LogOut, Mail, User } from 'lucide-react';
 
-const AccountPage = ({ user }) => {
+const AccountPage = ({ user, onSignOut }) => {
     return (
         <div className="screen animate-in fade-in duration-300 pb-8">
             <div className="h-36 rounded-2xl bg-gradient-to-r from-primary/40 via-violet-500/30 to-cyan-500/40 border border-white/10 mb-6 relative overflow-hidden">
@@ -27,6 +27,13 @@ const AccountPage = ({ user }) => {
                 <div className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail size={14} /> {user?.email || 'No email available'}
                 </div>
+                <Button
+                    variant="outline"
+                    className="mt-4 w-full justify-start border-red-500/40 text-red-300 hover:bg-red-500/10 hover:text-red-200"
+                    onClick={onSignOut}
+                >
+                    <LogOut size={14} className="mr-2" /> Sign Out
+                </Button>
             </Card>
 
             <Card className="p-4 bg-secondary/20 border-muted">

@@ -5,6 +5,12 @@ const PIN_REGEX = /^\d{4}$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9._-]{3,24}$/;
 const PIN_HASH_ITERATIONS = 210000;
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+const GUIDE_STEP_KEYS = ["addedExercise", "createdSuperset", "separatedSuperset"] as const;
+const DEFAULT_GUIDE_STEPS = {
+    addedExercise: false,
+    createdSuperset: false,
+    separatedSuperset: false,
+};
 
 const encoder = new TextEncoder();
 
@@ -29,6 +35,7 @@ const constantTimeEqual = (a: string, b: string) => {
 };
 
 const normalizeUsername = (username: string) => username.trim().toLowerCase();
+const getUtcDateKey = () => new Date().toISOString().slice(0, 10);
 
 const hashPin = async (pin: string, saltHex: string, iterations = PIN_HASH_ITERATIONS) => {
     const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(pin), "PBKDF2", false, ["deriveBits"]);
@@ -146,6 +153,8 @@ export const ensureUser = mutation({
             email: identity.email ?? undefined,
             authProviders: ["google"],
             onboardingCompleted: false,
+            onboardingGuideDateKey: getUtcDateKey(),
+            onboardingGuideSteps: DEFAULT_GUIDE_STEPS,
             currentStreak: 0,
             longestStreak: 0,
             createdAt: Date.now(),
@@ -187,6 +196,8 @@ export const signUpWithCredentials = mutation({
             credentialPinIterations: PIN_HASH_ITERATIONS,
             authProviders: ["credentials"],
             onboardingCompleted: false,
+            onboardingGuideDateKey: getUtcDateKey(),
+            onboardingGuideSteps: DEFAULT_GUIDE_STEPS,
             currentStreak: 0,
             longestStreak: 0,
             createdAt: Date.now(),
@@ -287,6 +298,74 @@ export const getUser = query({
     },
 });
 
+export const getOnboardingGuideState = query({
+    args: {
+        userId: v.id("users"),
+    },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.userId);
+        const todayKey = getUtcDateKey();
+
+        if (!user) {
+            return {
+                dateKey: todayKey,
+                steps: DEFAULT_GUIDE_STEPS,
+                completed: false,
+                shouldReset: false,
+            };
+        }
+
+        const storedSteps = user.onboardingGuideSteps || DEFAULT_GUIDE_STEPS;
+        const shouldReset = user.onboardingCompleted !== true && user.onboardingGuideDateKey !== todayKey;
+
+        return {
+            dateKey: shouldReset ? todayKey : (user.onboardingGuideDateKey || todayKey),
+            steps: shouldReset ? DEFAULT_GUIDE_STEPS : storedSteps,
+            completed: storedSteps.addedExercise && storedSteps.createdSuperset && storedSteps.separatedSuperset,
+            shouldReset,
+        };
+    },
+});
+
+export const upsertOnboardingGuideStep = mutation({
+    args: {
+        userId: v.id("users"),
+        step: v.union(v.literal("addedExercise"), v.literal("createdSuperset"), v.literal("separatedSuperset")),
+    },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.userId);
+        if (!user) throw new Error("User not found");
+
+        if (user.onboardingCompleted === true) {
+            return {
+                steps: user.onboardingGuideSteps || DEFAULT_GUIDE_STEPS,
+                completed: true,
+            };
+        }
+
+        const todayKey = getUtcDateKey();
+        const shouldReset = user.onboardingGuideDateKey !== todayKey;
+        const baseSteps = shouldReset ? { ...DEFAULT_GUIDE_STEPS } : { ...(user.onboardingGuideSteps || DEFAULT_GUIDE_STEPS) };
+        baseSteps[args.step] = true;
+
+        const nextSteps = {
+            addedExercise: !!baseSteps.addedExercise,
+            createdSuperset: !!baseSteps.createdSuperset,
+            separatedSuperset: !!baseSteps.separatedSuperset,
+        };
+
+        await ctx.db.patch(args.userId, {
+            onboardingGuideDateKey: todayKey,
+            onboardingGuideSteps: nextSteps,
+        });
+
+        return {
+            steps: nextSteps,
+            completed: GUIDE_STEP_KEYS.every((key) => nextSteps[key] === true),
+        };
+    },
+});
+
 export const completeOnboarding = mutation({
     args: {
         userId: v.id("users"),
@@ -298,6 +377,12 @@ export const completeOnboarding = mutation({
         await ctx.db.patch(args.userId, {
             onboardingCompleted: true,
             onboardingCompletedAt: Date.now(),
+            onboardingGuideDateKey: getUtcDateKey(),
+            onboardingGuideSteps: {
+                addedExercise: true,
+                createdSuperset: true,
+                separatedSuperset: true,
+            },
         });
 
         return { success: true };

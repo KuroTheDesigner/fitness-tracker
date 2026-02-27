@@ -32,6 +32,8 @@ const DAY_LABELS: Record<string, string> = {
     FRI: "Friday",
     SAT: "Saturday",
 };
+const MAX_TARGET_SETS = 12;
+const getUtcDateKey = () => new Date().toISOString().slice(0, 10);
 
 const DEFAULT_EXERCISES = [
     {
@@ -220,6 +222,58 @@ export const removeExerciseFromSuperset = mutation({
     },
 });
 
+export const incrementTargetSets = mutation({
+    args: {
+        workoutExerciseId: v.any(),
+    },
+    handler: async (ctx, args) => {
+        const workoutExerciseId = typeof args.workoutExerciseId === "string"
+            ? args.workoutExerciseId
+            : (args.workoutExerciseId?._id || args.workoutExerciseId?.toString?.());
+
+        if (!workoutExerciseId) {
+            return { success: false, atLimit: false, targetSets: 0 };
+        }
+
+        const workoutExercise = await ctx.db.get(workoutExerciseId as any);
+        if (!workoutExercise) {
+            return { success: false, atLimit: false, targetSets: 0 };
+        }
+
+        const workout = await ctx.db.get(workoutExercise.workoutId as any);
+        if (!workout) {
+            return { success: false, atLimit: false, targetSets: workoutExercise.targetSets || 0 };
+        }
+
+        const program = await ctx.db.get(workout.programId as any);
+        if (!program) {
+            return { success: false, atLimit: false, targetSets: workoutExercise.targetSets || 0 };
+        }
+
+        const currentTargetSets = Number.isFinite(workoutExercise.targetSets)
+            ? Math.max(0, Math.floor(workoutExercise.targetSets))
+            : 0;
+        const nextTargetSets = Math.min(MAX_TARGET_SETS, currentTargetSets + 1);
+        if (nextTargetSets === currentTargetSets) {
+            return {
+                success: true,
+                targetSets: currentTargetSets,
+                atLimit: true,
+            };
+        }
+
+        await ctx.db.patch(workoutExerciseId as any, {
+            targetSets: nextTargetSets,
+        });
+
+        return {
+            success: true,
+            targetSets: nextTargetSets,
+            atLimit: false,
+        };
+    },
+});
+
 export const bootstrapOnboardingProgram = mutation({
     args: {
         userId: v.id("users"),
@@ -332,6 +386,12 @@ export const bootstrapOnboardingProgram = mutation({
         await ctx.db.patch(args.userId, {
             preferredWorkoutDays: sortedDays,
             onboardingCompleted: false,
+            onboardingGuideDateKey: getUtcDateKey(),
+            onboardingGuideSteps: {
+                addedExercise: false,
+                createdSuperset: false,
+                separatedSuperset: false,
+            },
         });
 
         return {

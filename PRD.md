@@ -3,7 +3,7 @@
 | Task | task description | Status |
 |---|---|---|
 | Auth: Google sign-in flow | Shoo + Google sign-in UI and callback flow are wired and reachable from app entry. | Complete (tested) |
-| Auth: Sign-out flow | Global sign-out control exists and returns user to auth screen. | Complete (tested) |
+| Auth: Sign-out flow | Sign-out is available in Account settings and returns user to auth screen without overlapping workout UI. | Complete (tested) |
 | Auth: User auto-provisioning | First-login user creation is implemented via `users.ensureUser`. | Complete (untested) |
 | Auth: Separate sign-in/sign-up pages | Sign-in and sign-up have distinct UI modes with separate Google CTAs and direct navigation between modes. | Complete (tested) |
 | Auth: Username + PIN account flow | Users can sign up/sign in with first name + username + 4-digit PIN, with username prefill of last user and no PIN prefill. | Complete (tested) |
@@ -13,7 +13,7 @@
 | Bottom navigation foundation | App has a 5-item bottom nav and tab switching behavior. | Complete (tested) |
 | Workout tab base page shell | Workout tab view exists with hero/schedule structure and skeleton states. | in progress |
 | Progress tab base page | Analytics/progress page exists with stats, charts, and PR section scaffolding. | Complete (tested) |
-| Lessons tab removal + account replacement | Remove Lessons tab and replace it with Account icon; Account must be right-most item in the bottom-nav main menu. | Complete (untested) |
+| Lessons tab removal + account replacement | Remove Lessons tab and replace it with Account icon; Account must be right-most item in the bottom-nav main menu. | Complete (tested) |
 | Nutrition coming-soon page design | Build a dedicated Nutrition coming-soon page with icon and exact flavor text: "A Good rule of thumb is swap the portion size of your protein and carbs, then double your veggies and fruit." | Complete (untested) |
 | Dashboard as landing page redesign | Research top workout apps and redesign Dashboard as high-impact app landing experience. | in progress |
 | Progress page full redesign | Build polished, animated progress dashboards with editable time ranges and glanceable insights. | yet to start |
@@ -77,9 +77,11 @@
 | New-user workout bootstrap | Ensure newly authenticated users always get an initial program/schedule so workout tab does not remain in unresolved loading state. | Complete (untested) |
 | New-user onboarding flow | First-time users must complete onboarding slideshow/questionnaire before normal app usage. | Complete (tested) |
 | Onboarding workout-day selection | Onboarding must collect preferred workout days of week and persist the selection. | Complete (untested) |
-| First workout auto-creation flow | After onboarding, route user directly into their first upcoming workout logging session to build initial workout content. | Complete (untested) |
-| First-workout guided creation | In first workout flow, guide user through adding an exercise, creating a superset, and separating a superset. | Complete (untested) |
-| Onboarding completion routing | After first workout creation flow, return user to Dashboard landing page. | Complete (untested) |
+| First workout auto-creation flow | After onboarding, route user directly into their first upcoming workout logging session to build initial workout content. | Complete (tested) |
+| First-workout guided creation | In first workout flow, guide user through adding an exercise, creating a superset, and separating a superset. | Complete (tested) |
+| First-workout guide persistence | Guide checklist progress is stored server-side and resets daily until onboarding is completed. | Complete (tested) |
+| Add-set persistence to workout template | `ADD SET` increases target sets and persists for future sessions from template data source. | Complete (tested) |
+| Onboarding completion routing | After first workout creation flow, return user to Dashboard landing page. | Complete (tested) |
 | Validation pipeline | Add and enforce automated tests and checks to prevent regressions across frontend/backend/auth. | yet to start |
 | Global error handling + toasts | Add error boundaries and user-facing success/error toasts for key actions. | yet to start |
 | PR celebration animation | Add confetti/celebration animation when a new PR is achieved. | yet to start |
@@ -242,10 +244,12 @@
 | Lessons coming soon page | Implemented dedicated page with icon, flavor text, and `Coming soon`. |
 | Dashboard surface | Implemented initial premium shell for landing page direction. |
 | Account settings surface | Implemented account page shell with banner area and profile photo edit entry points. |
+| Account sign-out placement | Implemented sign-out in Account settings and removed floating global sign-out collision on workout UI. |
 
 ### Validation Snapshot (Pre-Live)
 - `npm run lint`: pass (2 existing warnings in generated Convex files).
 - `npm run build`: pass.
+- End-to-end onboarding validation: pass (add-set persistence, guided checklist completion flow, and account-page sign-out placement).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

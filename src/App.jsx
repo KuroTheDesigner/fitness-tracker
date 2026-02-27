@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LogOut } from 'lucide-react';
 import { useQuery, useMutation, useConvexAuth } from 'convex/react';
 import { api } from '../convex/_generated/api';
 import { signOut } from './shoo';
@@ -317,7 +316,7 @@ function App() {
       case 'account':
         return (
           <MotionDiv key="account" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <AccountPage user={activeUser} />
+            <AccountPage user={activeUser} onSignOut={handleSignOut} />
           </MotionDiv>
         );
       case 'dashboard':
@@ -342,16 +341,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center overflow-x-hidden">
-      {/* Always-visible sign-out button */}
-      {isAppAuthenticated && (
-        <button
-          onClick={handleSignOut}
-          className="fixed top-4 right-4 z-[100] w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-red-500 hover:border-red-500/50 transition-all"
-          title="Sign Out"
-        >
-          <LogOut size={16} />
-        </button>
-      )}
       <main className="flex-1 w-full max-w-[480px] px-6 pb-24 relative">
         <AnimatePresence mode="wait">
           {renderView()}

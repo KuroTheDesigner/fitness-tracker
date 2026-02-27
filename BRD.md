@@ -143,11 +143,11 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-04 Schedule-day state/routing | Delivered. |
 | BR-05 Completed/future summary variants | Delivered (warm-up removed). |
 | BR-06 Workout schedule UI updates | Partially delivered (title cleanup + CTA parity delivered; drag handle/long-press pending). |
-| BR-07 Navigation IA updates | Delivered for Lessons removal and Account tab move. |
+| BR-07 Navigation IA updates | Delivered and locally validated for Lessons removal, Account tab move, and non-colliding sign-out placement. |
 | BR-08 Coming soon experience | Delivered. |
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
-| BR-11 Account settings experience | Initial shell delivered (media upload persistence pending). |
-| BR-17 New-user onboarding + first workout creation | Partially production-verified (onboarding entry verified; full first-workout guided checklist pass pending). |
+| BR-11 Account settings experience | Initial shell + in-page sign-out delivered and locally validated (media upload persistence pending). |
+| BR-17 New-user onboarding + first workout creation | Delivered and locally validated end-to-end (daily-reset guide persistence + add-set persistence included). |
 | BR-18 Auth experience expansion (Google + Username/PIN) | Delivered and production-verified (separate sign-in/sign-up, credential auth, username prefill, onboarding bypass). |
 
 ### Notes
@@ -157,6 +157,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 ### Engineering Validation (Pre-Live)
 - Lint passes.
 - Production build passes.
+- End-to-end onboarding/guided-workout validation passes (guided steps completion, add-set persistence, Account sign-out visibility).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).
