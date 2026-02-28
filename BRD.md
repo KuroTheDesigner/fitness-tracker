@@ -147,7 +147,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-08 Coming soon experience | Delivered. |
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
 | BR-11 Account settings experience | Initial shell + in-page sign-out delivered and locally validated (media upload persistence pending). |
-| BR-17 New-user onboarding + first workout creation | Delivered and locally validated end-to-end (daily-reset guide persistence + add-set persistence included), plus guided-workout UI polish for swipe affordance behavior, onboarding completion CTA pending state, and onboarding-safe navigation. |
+| BR-17 New-user onboarding + first workout creation | Delivered and locally validated end-to-end (daily-reset guide persistence + add-set persistence included), plus guided-workout UI polish for swipe affordance behavior, onboarding completion CTA pending state, and onboarding-safe navigation; 2026-02-27 re-validation confirms guided-workout checklist completion unblocks onboarding completion to Dashboard. |
 | BR-18 Auth experience expansion (Google + Username/PIN) | Delivered and production-verified (separate sign-in/sign-up, credential auth, username prefill, onboarding bypass). |
 
 ### Notes
@@ -159,6 +159,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 - Production build passes.
 - End-to-end onboarding/guided-workout validation passes (guided steps completion, add-set persistence, mid-flow reload resume + guide-progress persistence, Account sign-out visibility).
 - Guided first-workout UI re-validation passes (fresh-account path, add-exercise modal/search/empty state, create+separate superset flow, and finish-onboarding transition feedback).
+- 2026-02-27 onboarding completion acceptance re-check passes: guided-workout checklist completion now exits onboarding successfully (evidence in `audit_artifacts/onboarding_fix_validation_20260227/` and `audit_artifacts/onboarding_deep_reaudit_20260227/`, including `09_after_finish_onboarding.png` and `report.json`).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).

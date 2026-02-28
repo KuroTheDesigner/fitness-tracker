@@ -252,6 +252,7 @@
 - `npm run build`: pass.
 - End-to-end onboarding validation: pass (add-set persistence, guided checklist completion flow, mid-flow reload restoration into guided workout with persisted progress, and account-page sign-out placement).
 - Guided first-workout onboarding UI re-validation: pass (fresh-account path, add-exercise modal/search/empty state, create+separate superset flow, finish-onboarding pending state/transition, and swipe affordance behavior).
+- 2026-02-27 guided-workout checklist fix re-validation: pass (onboarding checklist completes and onboarding completion is unblocked end-to-end to Dashboard). Evidence captured in `audit_artifacts/onboarding_fix_validation_20260227/` and `audit_artifacts/onboarding_deep_reaudit_20260227/` (including `09_after_finish_onboarding.png` and `report.json`).
 
 ### Additional Context — Sample Screens
 - See `SampleScreens-OwnerNotes.md` for the full owner narrative tied to the reference screenshots (workout tracking, summary screens, weekly progress, and PR logic).
