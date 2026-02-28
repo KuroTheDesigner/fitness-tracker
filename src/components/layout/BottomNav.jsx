@@ -23,7 +23,7 @@ const BottomNav = ({ activeTab, onTabChange }) => {
                             className={`nav-item ${isActive ? 'active' : ''}`}
                             onClick={() => onTabChange(tab.id)}
                         >
-                            <Icon size={24} className="nav-icon" />
+                            <Icon className="nav-icon" />
                             <span className="nav-label">{tab.label}</span>
                             {isActive && <div className="active-indicator" />}
                         </button>

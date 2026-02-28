@@ -5,7 +5,7 @@
     right: 0;
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--bg-tertiary);
-    padding: var(--space-xs) 0;
+    padding: var(--space-xs) 0 20px 0;
     z-index: 1000;
     backdrop-filter: blur(10px);
 }
@@ -35,12 +35,16 @@
 }
 
 .nav-icon {
-    transition: transform var(--transition-fast);
+    width: 24px;
+    height: 24px;
+    transition: all 0.3s ease;
 }
 
 .nav-item.active .nav-icon {
-    transform: translateY(-2px);
-    filter: drop-shadow(0 0 5px var(--accent-glow));
+    width: 34px;
+    height: 34px;
+    transform: translateY(-4px);
+    filter: drop-shadow(0 0 8px var(--accent-glow));
 }
 
 .nav-label {

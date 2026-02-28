@@ -1,0 +1,20 @@
+{
+  "core_flow": {
+    "account_created": true,
+    "step3_start_disabled_when_no_days": true,
+    "guided_reached": true,
+    "separate_hidden_before_superset": true,
+    "modal_open_close_stable": true,
+    "guide_step1_add_exercise": true,
+    "guide_step2_create_superset": true,
+    "guide_step3_separate_superset": true,
+    "add_set_rapid_tap_delta": 8,
+    "finish_enabled_after_3_steps": true,
+    "completed_to_dashboard": true
+  },
+  "edge_flow": {
+    "reload_midflow_returns_to_guided": true,
+    "reload_midflow_preserves_guide_progress": true
+  },
+  "console_errors": []
+}
