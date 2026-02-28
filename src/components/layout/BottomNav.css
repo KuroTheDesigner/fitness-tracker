@@ -37,13 +37,14 @@
 .nav-icon {
     width: 24px;
     height: 24px;
-    transition: all 0.3s ease;
+    /* Industry standard for spring-like organic bounce */
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        filter 0.3s ease;
 }
 
 .nav-item.active .nav-icon {
-    width: 34px;
-    height: 34px;
-    transform: translateY(-4px);
+    /* Scaling from 24px to 34px is a factor of 34/24 ≈ 1.416 */
+    transform: translateY(-8px) scale(1.416);
     filter: drop-shadow(0 0 8px var(--accent-glow));
 }
 
