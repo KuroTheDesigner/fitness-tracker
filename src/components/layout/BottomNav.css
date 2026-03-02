@@ -46,6 +46,46 @@
     /* Scaling from 24px to 34px is a factor of 34/24 ≈ 1.416 */
     transform: translateY(-8px) scale(1.416);
     filter: drop-shadow(0 0 8px var(--accent-glow));
+    animation: levitateAndSpin 8s linear infinite;
+    animation-delay: 0.4s;
+}
+
+@keyframes levitateAndSpin {
+    0% {
+        transform: translateY(-8px) scale(1.416) rotate(0deg);
+    }
+
+    12.5% {
+        transform: translateY(-10.8px) scale(1.416) rotate(45deg);
+    }
+
+    25% {
+        transform: translateY(-12px) scale(1.416) rotate(90deg);
+    }
+
+    37.5% {
+        transform: translateY(-10.8px) scale(1.416) rotate(135deg);
+    }
+
+    50% {
+        transform: translateY(-8px) scale(1.416) rotate(180deg);
+    }
+
+    62.5% {
+        transform: translateY(-5.2px) scale(1.416) rotate(225deg);
+    }
+
+    75% {
+        transform: translateY(-4px) scale(1.416) rotate(270deg);
+    }
+
+    87.5% {
+        transform: translateY(-5.2px) scale(1.416) rotate(315deg);
+    }
+
+    100% {
+        transform: translateY(-8px) scale(1.416) rotate(360deg);
+    }
 }
 
 .nav-label {

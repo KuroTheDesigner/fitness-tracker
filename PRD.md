@@ -11,6 +11,7 @@
 | Auth: Sign-in onboarding bypass | Returning sign-ins load profile/saved data without forcing onboarding, while sign-ups still enter onboarding. | Complete (tested) |
 | Auth: Credential lockout hardening | Implement brute-force protection for username/PIN sign-in: 10 failed attempts → 30-minute lockout window. | yet to start |
 | Bottom navigation foundation | App has a 5-item bottom nav and tab switching behavior. | Complete (tested) |
+| Bottom navigation idle animations | Active tab icon levitates and spins slowly to indicate focus. | Complete (tested) |
 | Workout tab base page shell | Workout tab view exists with hero/schedule structure and skeleton states. | in progress |
 | Progress tab base page | Analytics/progress page exists with stats, charts, and PR section scaffolding. | Complete (tested) |
 | Lessons tab removal + account replacement | Remove Lessons tab and replace it with Account icon; Account must be right-most item in the bottom-nav main menu. | Complete (tested) |

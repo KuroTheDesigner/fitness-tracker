@@ -52,6 +52,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 - Remove AI chat icon from schedule top-right.
 - Treat the bottom navigation bar as the **main menu**, with the **Account** tab as the **right-most item**.
 - Remove Lessons from main tab navigation.
+- Implement idle "levitate and spin" animations for the active bottom nav tab.
 
 ### BR-08: Coming Soon Experience
 - Nutrition page: dedicated coming-soon design with icon + exact supplied flavor text.
@@ -144,6 +145,7 @@ Fitness Tracker V1 — UX/Product Expansion Plan (sample-screen aligned)
 | BR-05 Completed/future summary variants | Delivered (warm-up removed). |
 | BR-06 Workout schedule UI updates | Partially delivered (title cleanup + CTA parity delivered; drag handle/long-press pending). |
 | BR-07 Navigation IA updates | Delivered and locally validated for Lessons removal, Account tab move, and non-colliding sign-out placement. |
+| BR-07 Navigation IA updates (Idle animations) | Delivered (levitate and spin animation added to active tabs). |
 | BR-08 Coming soon experience | Delivered. |
 | BR-09 Dashboard redesign | Initial shell delivered (full research-led redesign pending). |
 | BR-11 Account settings experience | Initial shell + in-page sign-out delivered and locally validated (media upload persistence pending). |
