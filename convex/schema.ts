@@ -5,12 +5,38 @@ export default defineSchema({
     users: defineTable({
         shooSubject: v.optional(v.string()), // pairwise_sub from Shoo (Google identity)
         name: v.optional(v.string()),
+        displayName: v.optional(v.string()),
         email: v.optional(v.string()),
+        username: v.optional(v.string()),
+        usernameNormalized: v.optional(v.string()),
+        credentialPinHash: v.optional(v.string()),
+        credentialPinSalt: v.optional(v.string()),
+        credentialPinIterations: v.optional(v.number()),
+        authProviders: v.optional(v.array(v.string())),
+        onboardingCompleted: v.optional(v.boolean()),
+        onboardingCompletedAt: v.optional(v.number()),
+        onboardingGuideDateKey: v.optional(v.string()),
+        onboardingGuideSteps: v.optional(v.object({
+            addedExercise: v.boolean(),
+            createdSuperset: v.boolean(),
+            separatedSuperset: v.boolean(),
+        })),
+        onboardingActiveWorkoutId: v.optional(v.id("workouts")),
+        preferredWorkoutDays: v.optional(v.array(v.string())),
         currentStreak: v.optional(v.number()),
         longestStreak: v.optional(v.number()),
         lastWorkoutDate: v.optional(v.string()), // ISO date string
         createdAt: v.optional(v.number()),
-    }).index("by_shooSubject", ["shooSubject"]),
+    }).index("by_shooSubject", ["shooSubject"])
+        .index("by_usernameNormalized", ["usernameNormalized"]),
+
+    credentialAuthSessions: defineTable({
+        userId: v.id("users"),
+        tokenHash: v.string(),
+        expiresAt: v.number(),
+        createdAt: v.number(),
+    }).index("by_tokenHash", ["tokenHash"])
+        .index("by_userId", ["userId"]),
 
     programs: defineTable({
         name: v.string(),
@@ -31,9 +57,6 @@ export default defineSchema({
     exercises: defineTable({
         name: v.string(),
         muscleGroups: v.array(v.string()),
-        primary_muscle: v.optional(v.string()), // Target Muscle
-        secondary_muscles: v.optional(v.array(v.string())), // Collateral muscles 
-        emphasized_focus: v.optional(v.string()), // Specific part of muscle (e.g. Upper Chest)
         equipment: v.optional(v.string()),
         youtubeUrl: v.optional(v.string()),
         thumbnailUrl: v.optional(v.string()),
@@ -64,11 +87,10 @@ export default defineSchema({
 
     setHistory: defineTable({
         userId: v.id("users"),
-        workoutHistoryId: v.optional(v.id("workoutHistory")),
+        workoutHistoryId: v.id("workoutHistory"),
         workoutExerciseId: v.id("workoutExercises"),
         exerciseId: v.id("exercises"),
         setNumber: v.number(),
-        setId: v.optional(v.string()), // Format: '1A', '1B' for supersets
         weight: v.optional(v.number()),
         reps: v.number(),
         effortLevel: v.optional(v.string()),

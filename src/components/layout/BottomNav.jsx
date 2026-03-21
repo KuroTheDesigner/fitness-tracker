@@ -1,14 +1,14 @@
 import React from 'react';
-import { BookOpen, Utensils, LayoutDashboard, Dumbbell, TrendingUp } from 'lucide-react';
+import { Utensils, LayoutDashboard, Dumbbell, TrendingUp, User } from 'lucide-react';
 import './BottomNav.css';
 
 const BottomNav = ({ activeTab, onTabChange }) => {
     const tabs = [
-        { id: 'lessons', label: 'Lessons', icon: BookOpen },
         { id: 'nutrition', label: 'Nutrition', icon: Utensils },
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'workout', label: 'Workout', icon: Dumbbell },
         { id: 'progress', label: 'Progress', icon: TrendingUp },
+        { id: 'account', label: 'Account', icon: User },
     ];
 
     return (
@@ -23,7 +23,7 @@ const BottomNav = ({ activeTab, onTabChange }) => {
                             className={`nav-item ${isActive ? 'active' : ''}`}
                             onClick={() => onTabChange(tab.id)}
                         >
-                            <Icon size={24} className="nav-icon" />
+                            <Icon className="nav-icon" />
                             <span className="nav-label">{tab.label}</span>
                             {isActive && <div className="active-indicator" />}
                         </button>

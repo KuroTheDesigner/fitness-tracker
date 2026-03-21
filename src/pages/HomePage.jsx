@@ -2,15 +2,13 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Play, Settings, User, LogOut } from 'lucide-react';
+import { Play, Settings, Eye, FileText } from 'lucide-react';
 import { useWorkout } from '@/hooks/useWorkout';
-import { signOut } from '@/shoo';
 
 const DAYS_OF_WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-const HomePage = ({ userId, onStartWorkout }) => {
-    const { program, schedule, isLoading } = useWorkout(userId);
-
+const HomePage = ({ userId, onOpenWorkout }) => {
+    const { schedule, isLoading } = useWorkout(userId);
 
     // Get current day of week
     const today = DAYS_OF_WEEK[new Date().getDay()];
@@ -22,13 +20,37 @@ const HomePage = ({ userId, onStartWorkout }) => {
             day,
             activity: workout?.name || 'Rest',
             type: workout ? 'workout' : 'rest',
-            isCurrentDay: day === today,
+            dayStatus: workout?.dayStatus || (day === today ? 'current' : 'future'),
+            isCurrentDay: workout?.dayStatus === 'current' || day === today,
             workoutId: workout?._id,
+            isCompleted: workout?.isCompleted || false,
         };
     });
 
     // Find today's workout
     const todaysWorkout = weeklySchedule.find(w => w.isCurrentDay && w.type === 'workout');
+
+    const getActionLabel = (dayStatus) => {
+        if (dayStatus === 'current') return 'START';
+        if (dayStatus === 'past') return 'SUMMARY';
+        return 'PREVIEW';
+    };
+
+    const getActionIcon = (dayStatus) => {
+        if (dayStatus === 'current') return <Play size={14} fill="currentColor" />;
+        if (dayStatus === 'past') return <FileText size={14} />;
+        return <Eye size={14} />;
+    };
+
+    const handleWorkoutOpen = (item) => {
+        if (!item?.workoutId || !onOpenWorkout) return;
+        onOpenWorkout({
+            workoutId: item.workoutId,
+            workoutName: item.activity,
+            dayStatus: item.dayStatus,
+            isCompleted: item.isCompleted,
+        });
+    };
 
     // Loading skeleton
     if (isLoading) {
@@ -64,46 +86,43 @@ const HomePage = ({ userId, onStartWorkout }) => {
 
     return (
         <div className="screen animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Edge-to-Edge Hero Card */}
-            <div className="relative overflow-hidden h-[300px] border-none -mx-6 mb-8 bg-background shadow-[0_10px_40px_rgba(0,255,102,0.05)] border-b border-primary/20">
-                <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/90 to-background/10 p-8 flex flex-col justify-end pb-10">
+            {/* Today's Workout Card */}
+            <Card className="relative overflow-hidden h-[220px] border-none glow mb-8 mt-2">
+                <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 to-transparent p-6 flex flex-col justify-center">
                     {todaysWorkout ? (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-700 delay-150">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                <span className="text-[10px] font-black accent-text uppercase tracking-widest">Today's Protocol</span>
-                            </div>
-                            <h1 className="text-[40px] font-display leading-[0.9] tracking-tighter mb-6 uppercase drop-shadow-[0_0_10px_rgba(0,255,102,0.3)]">{todaysWorkout.activity}</h1>
+                        <>
+                            <span className="text-sm font-bold accent-text uppercase tracking-widest mb-1">Today's Workout</span>
+                            <h1 className="text-4xl font-display mb-4">{todaysWorkout.activity}</h1>
                             <Button
                                 size="lg"
-                                className="w-fit h-12 px-6 gap-3 font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(0,255,102,0.2)]"
-                                onClick={() => onStartWorkout(todaysWorkout.workoutId, todaysWorkout.activity)}
+                                className="w-fit gap-2 font-bold"
+                                onClick={() => handleWorkoutOpen(todaysWorkout)}
                             >
-                                <Play size={16} fill="currentColor" />
-                                INITIALIZE
+                                <Play size={18} fill="currentColor" />
+                                GET STARTED
                             </Button>
-                        </div>
+                        </>
                     ) : (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-700 delay-150">
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 block">Today</span>
-                            <h1 className="text-5xl font-display mb-4 uppercase text-muted-foreground/50 tracking-tighter">Rest Day</h1>
-                            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">System Repair Sequence</p>
-                        </div>
+                        <>
+                            <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Today</span>
+                            <h1 className="text-4xl font-display mb-4">Rest Day</h1>
+                            <p className="text-muted-foreground text-sm">Recovery is part of progress. See you tomorrow!</p>
+                        </>
                     )}
                 </div>
                 <img
-                    src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1000&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=300&auto=format&fit=crop"
                     alt="Athlete"
-                    className="absolute right-0 top-0 h-full w-[80%] object-cover grayscale opacity-40 mix-blend-screen [mask-image:linear-gradient(to_left,black_20%,transparent_100%)]"
+                    className="absolute right-0 top-0 h-full w-1/2 object-cover grayscale opacity-60"
                 />
-            </div>
+            </Card>
 
             {/* Weekly Schedule Section */}
             <section className="mb-8">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-display">This Week's Schedule</h3>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-500 transition-colors" onClick={signOut}>
-                        <LogOut size={18} />
+                    <Button variant="ghost" size="icon" className="text-muted-foreground">
+                        <Settings size={18} />
                     </Button>
                 </div>
 
@@ -118,17 +137,17 @@ const HomePage = ({ userId, onStartWorkout }) => {
                             </div>
                             <Card
                                 className={`flex-1 flex justify-between items-center p-3 cursor-pointer transition-all hover:border-primary/50 ${item.type === 'rest' ? 'opacity-50' : ''}`}
-                                onClick={item.type === 'workout' ? () => onStartWorkout(item.workoutId, item.activity) : undefined}
+                                onClick={item.type === 'workout' ? () => handleWorkoutOpen(item) : undefined}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === 'workout' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                        {item.type === 'workout' ? <Play size={14} fill="currentColor" /> : <div className="w-2 h-2 rounded-full border-2 border-current" />}
+                                        {item.type === 'workout' ? getActionIcon(item.dayStatus) : <div className="w-2 h-2 rounded-full border-2 border-current" />}
                                     </div>
                                     <span className={`font-medium ${item.isCurrentDay ? 'text-foreground' : 'text-muted-foreground'}`}>{item.activity}</span>
                                 </div>
                                 {item.type === 'workout' && (
                                     <Button variant="outline" size="sm" className="h-7 px-3 text-[10px] font-bold border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground">
-                                        START
+                                        {getActionLabel(item.dayStatus)}
                                     </Button>
                                 )}
                             </Card>

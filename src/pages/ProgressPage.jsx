@@ -1,11 +1,10 @@
 import React from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
-import { Flame, Trophy, Calendar, TrendingUp } from 'lucide-react';
-import VolumeTracker from '@/components/progress/VolumeTracker';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { Flame, Trophy } from 'lucide-react';
 
 const MUSCLE_COLORS = [
     '#00ff66', // Primary green
@@ -38,13 +37,6 @@ const ProgressPage = ({ userId }) => {
 
     // Format date for PRs
     const formatDate = (timestamp) => {
-        const now = Date.now();
-        const diff = now - timestamp;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-        if (days === 0) return 'Today';
-        if (days === 1) return 'Yesterday';
-        if (days < 7) return `${days} days ago`;
         return new Date(timestamp).toLocaleDateString();
     };
 
@@ -126,9 +118,53 @@ const ProgressPage = ({ userId }) => {
                 </Card>
             </section>
 
-            {/* Interactive 3D Muscle Volume Tracker */}
-            <section className="mb-8 w-full flex justify-center">
-                <VolumeTracker recentSetsWithExercises={muscleBreakdown} />
+            {/* Muscle Focus */}
+            <section className="mb-8">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Muscle Focus</h3>
+                <Card className="bg-secondary p-4 border-none overflow-hidden">
+                    <div className="flex flex-col items-center">
+                        {pieData.length > 0 ? (
+                            <>
+                                <div className="relative w-full h-[180px]">
+                                    <ResponsiveContainer>
+                                        <PieChart>
+                                            <Pie
+                                                data={pieData}
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                                stroke="none"
+                                            >
+                                                {pieData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                        <span className="text-[10px] font-black text-muted-foreground tracking-tighter uppercase">Volume</span>
+                                    </div>
+                                </div>
+                                <div className="w-full flex flex-col gap-2 mt-4 px-4">
+                                    {pieData.map(item => (
+                                        <div key={item.name} className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: item.color }}></div>
+                                                <span className="text-xs font-bold uppercase">{item.name}</span>
+                                            </div>
+                                            <span className="text-xs font-black">{item.value}%</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">
+                                Log sets to see muscle breakdown
+                            </div>
+                        )}
+                    </div>
+                </Card>
             </section>
 
             {/* Recent PRs */}

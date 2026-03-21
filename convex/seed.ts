@@ -6,7 +6,7 @@ export const seedDatabase = mutation({
     handler: async (ctx) => {
         // 1. Create a dummy user
         const userId = await ctx.db.insert("users", {
-            clerkId: "user_123",
+            shooSubject: "seed_user",
             name: "Oshiogwe",
             email: "user@example.com",
             currentStreak: 5,

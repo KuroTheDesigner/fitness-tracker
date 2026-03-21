@@ -4,9 +4,11 @@ import { api } from "../../convex/_generated/api";
 export const useWorkout = (userId) => {
     const program = useQuery(api.workouts.getProgram, userId ? { userId } : "skip");
     const schedule = useQuery(
-        api.workouts.getWorkoutSchedule,
-        program ? { programId: program._id } : "skip"
+        api.workouts.getWorkoutScheduleWithStatus,
+        program && userId ? { programId: program._id, userId } : "skip"
     );
+    const isProgramLoading = !!userId && program === undefined;
+    const isScheduleLoading = !!program && schedule === undefined;
 
     const logSet = useMutation(api.logging.logSet);
     const finishWorkout = useMutation(api.logging.finishWorkout);
@@ -16,6 +18,6 @@ export const useWorkout = (userId) => {
         schedule,
         logSet,
         finishWorkout,
-        isLoading: program === undefined || schedule === undefined,
+        isLoading: isProgramLoading || isScheduleLoading,
     };
 };
