@@ -27,6 +27,9 @@ export const seedDatabase = mutation({
         const ex1 = await ctx.db.insert("exercises", {
             name: "Neutral Grip Dumbbell Press",
             muscleGroups: ["Chest", "Front Delts"],
+            primary_muscle: "Chest",
+            secondary_muscles: ["Front Delts", "Triceps"],
+            emphasized_focus: "Mid Chest",
             equipment: "Dumbbells",
             youtubeUrl: "https://www.youtube.com/watch?v=W3M3pIsN_8k",
             isCustom: false,
@@ -35,6 +38,9 @@ export const seedDatabase = mutation({
         const ex2 = await ctx.db.insert("exercises", {
             name: "3 Point Dumbbell Row",
             muscleGroups: ["Back", "Biceps"],
+            primary_muscle: "Back",
+            secondary_muscles: ["Biceps"],
+            emphasized_focus: "Lats",
             equipment: "Dumbbells",
             youtubeUrl: "https://www.youtube.com/watch?v=6KOclUM8D3A",
             isCustom: false,
@@ -43,6 +49,9 @@ export const seedDatabase = mutation({
         const ex3 = await ctx.db.insert("exercises", {
             name: "Dumbbell Romanian Deadlift",
             muscleGroups: ["Hamstrings", "Glutes"],
+            primary_muscle: "Hamstrings",
+            secondary_muscles: ["Glutes"],
+            emphasized_focus: "Hamstrings",
             equipment: "Dumbbells",
             youtubeUrl: "https://www.youtube.com/watch?v=JCX81Pbcid8",
             isCustom: false,
@@ -51,8 +60,34 @@ export const seedDatabase = mutation({
         const ex4 = await ctx.db.insert("exercises", {
             name: "Dumbbell Lateral Raises",
             muscleGroups: ["Shoulders"],
+            primary_muscle: "Shoulders",
+            secondary_muscles: [],
+            emphasized_focus: "Side Delts",
             equipment: "Dumbbells",
             youtubeUrl: "https://www.youtube.com/watch?v=PzsziW-H-6Y",
+            isCustom: false,
+        });
+
+        // Add alternatives for testing the Swap Category Logic
+        const ex5 = await ctx.db.insert("exercises", {
+            name: "Barbell Bench Press",
+            muscleGroups: ["Chest", "Front Delts"],
+            primary_muscle: "Chest",
+            secondary_muscles: ["Front Delts", "Triceps"],
+            emphasized_focus: "Mid Chest",
+            equipment: "Barbell",
+            youtubeUrl: "https://www.youtube.com/watch?v=rT7DgCr-3pg",
+            isCustom: false,
+        });
+
+        const ex6 = await ctx.db.insert("exercises", {
+            name: "Incline Dumbbell Press",
+            muscleGroups: ["Chest", "Front Delts"],
+            primary_muscle: "Chest",
+            secondary_muscles: ["Front Delts", "Triceps"],
+            emphasized_focus: "Upper Chest",
+            equipment: "Dumbbells",
+            youtubeUrl: "https://www.youtube.com/watch?v=8iPEnn-ltC8",
             isCustom: false,
         });
 
@@ -112,5 +147,34 @@ export const seedDatabase = mutation({
         });
 
         return { userId, programId, workoutAId };
+    },
+});
+
+export const clearDatabase = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const users = await ctx.db.query("users").collect();
+        for (const u of users) await ctx.db.delete(u._id);
+
+        const programs = await ctx.db.query("programs").collect();
+        for (const p of programs) await ctx.db.delete(p._id);
+
+        const exercises = await ctx.db.query("exercises").collect();
+        for (const e of exercises) await ctx.db.delete(e._id);
+
+        const workouts = await ctx.db.query("workouts").collect();
+        for (const w of workouts) await ctx.db.delete(w._id);
+
+        const we = await ctx.db.query("workoutExercises").collect();
+        for (const item of we) await ctx.db.delete(item._id);
+
+        const wh = await ctx.db.query("workoutHistory").collect();
+        for (const item of wh) await ctx.db.delete(item._id);
+
+        const sh = await ctx.db.query("setHistory").collect();
+        for (const item of sh) await ctx.db.delete(item._id);
+
+        const prs = await ctx.db.query("personalRecords").collect();
+        for (const item of prs) await ctx.db.delete(item._id);
     },
 });

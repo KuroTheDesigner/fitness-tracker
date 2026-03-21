@@ -12,7 +12,9 @@ export const logSet = mutation({
         effortLevel: v.optional(v.string()), // 'easy', 'ideal', 'max', 'NORMAL'
     },
     handler: async (ctx, args) => {
-        // 1. Check for PR
+        // 1. Check for Efficacy PR (weight * reps)
+        const efficacy = (args.weight || 0) * (args.reps || 0);
+
         const existingPR = await ctx.db
             .query("personalRecords")
             .withIndex("by_userId_exerciseId", (q) =>
@@ -21,7 +23,7 @@ export const logSet = mutation({
             .unique();
 
         let isPR = false;
-        if (!existingPR || args.weight > existingPR.value) {
+        if (efficacy > 0 && (!existingPR || efficacy > existingPR.value)) {
             isPR = true;
         }
 
@@ -36,7 +38,7 @@ export const logSet = mutation({
         if (isPR) {
             if (existingPR) {
                 await ctx.db.patch(existingPR._id, {
-                    value: args.weight,
+                    value: efficacy,
                     achievedAt: Date.now(),
                     setHistoryId,
                 });
@@ -44,8 +46,8 @@ export const logSet = mutation({
                 await ctx.db.insert("personalRecords", {
                     userId: args.userId,
                     exerciseId: args.exerciseId,
-                    type: "MAX_WEIGHT",
-                    value: args.weight,
+                    type: "MAX_EFFICACY",
+                    value: efficacy,
                     achievedAt: Date.now(),
                     setHistoryId,
                 });

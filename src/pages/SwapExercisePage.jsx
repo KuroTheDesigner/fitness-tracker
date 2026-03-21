@@ -6,8 +6,9 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ChevronLeft, ChevronRight, Zap, LayoutGrid, Dumbbell } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Zap, LayoutGrid, Dumbbell, Star } from 'lucide-react';
 import CustomExerciseModal from '@/components/workout/CustomExerciseModal';
+import { categorizeAlternatives } from '../utils/swapSorter';
 
 const SwapExercisePage = ({ userId, workoutExerciseToSwap, onBack, onSwapComplete }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -34,6 +35,12 @@ const SwapExercisePage = ({ userId, workoutExerciseToSwap, onBack, onSwapComplet
             .map(([name, count]) => ({ name, count }))
             .sort((a, b) => b.count - a.count); // sort by count descending
     }, [exercises]);
+
+    // Categorize exercises via Math Engine
+    const { recommended, other } = useMemo(() => {
+        if (!exercises || !workoutExerciseToSwap?.exercise) return { recommended: exercises || [], other: [] };
+        return categorizeAlternatives(workoutExerciseToSwap.exercise, exercises);
+    }, [exercises, workoutExerciseToSwap]);
 
     // Handle selection
     const handleSelect = async (newExercise) => {
@@ -98,36 +105,79 @@ const SwapExercisePage = ({ userId, workoutExerciseToSwap, onBack, onSwapComplet
                             <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No matching exercises found.</p>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {exercises.map(ex => (
-                                <Card
-                                    key={ex._id}
-                                    className="bg-secondary/40 border-muted overflow-hidden cursor-pointer hover:border-primary/50 transition-all group"
-                                    onClick={() => handleSelect(ex)}
-                                >
-                                    <div className="p-3 flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative">
-                                            {ex.thumbnailUrl ? (
-                                                <img src={ex.thumbnailUrl} alt={ex.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <Dumbbell size={20} className="text-muted-foreground" />
-                                            )}
-                                            {ex.isCustom && (
-                                                <div className="absolute top-0 right-0 bg-primary w-2 h-2 rounded-bl-sm" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <span className="text-sm font-bold uppercase leading-tight group-hover:text-primary transition-colors block truncate">{ex.name}</span>
-                                            {ex.muscleGroups && (
-                                                <span className="text-[10px] text-muted-foreground font-black tracking-widest uppercase truncate block">
-                                                    {ex.muscleGroups.join(' • ')}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <ChevronRight size={18} className="text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
+                        <div className="space-y-6">
+                            {recommended.length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3 px-1 text-primary">
+                                        <Star size={14} className="fill-primary" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest">Recommended Alternatives</h3>
                                     </div>
-                                </Card>
-                            ))}
+                                    <div className="space-y-3">
+                                        {recommended.map(ex => (
+                                            <Card
+                                                key={ex._id}
+                                                className="bg-primary/5 border-primary/20 overflow-hidden cursor-pointer hover:border-primary/50 transition-all group"
+                                                onClick={() => handleSelect(ex)}
+                                            >
+                                                <div className="p-3 flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center relative">
+                                                        {ex.thumbnailUrl ? (
+                                                            <img src={ex.thumbnailUrl} alt={ex.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <Dumbbell size={20} className="text-primary/50" />
+                                                        )}
+                                                        {ex.isCustom && <div className="absolute top-0 right-0 bg-primary w-2 h-2 rounded-bl-sm" />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="text-sm font-bold uppercase leading-tight group-hover:text-primary transition-colors block truncate">{ex.name}</span>
+                                                        <span className="text-[9px] text-primary/70 font-black tracking-widest uppercase truncate block mt-[2px]">
+                                                            {ex.emphasized_focus ? `Focus: ${ex.emphasized_focus}` : ex.primary_muscle || 'General'}
+                                                        </span>
+                                                    </div>
+                                                    <ChevronRight size={18} className="text-primary/50 flex-shrink-0 group-hover:text-primary transition-colors" />
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {other.length > 0 && (
+                                <div>
+                                    {(recommended.length > 0) && (
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 px-1">Other Alternatives</h3>
+                                    )}
+                                    <div className="space-y-3">
+                                        {other.map(ex => (
+                                            <Card
+                                                key={ex._id}
+                                                className="bg-secondary/40 border-muted overflow-hidden cursor-pointer hover:border-primary/50 transition-all group"
+                                                onClick={() => handleSelect(ex)}
+                                            >
+                                                <div className="p-3 flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative">
+                                                        {ex.thumbnailUrl ? (
+                                                            <img src={ex.thumbnailUrl} alt={ex.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <Dumbbell size={20} className="text-muted-foreground" />
+                                                        )}
+                                                        {ex.isCustom && <div className="absolute top-0 right-0 bg-primary w-2 h-2 rounded-bl-sm" />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="text-sm font-bold uppercase leading-tight group-hover:text-primary transition-colors block truncate">{ex.name}</span>
+                                                        {ex.muscleGroups && (
+                                                            <span className="text-[9px] text-muted-foreground font-black tracking-widest uppercase truncate block mt-[2px]">
+                                                                {ex.muscleGroups.join(' • ')}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <ChevronRight size={18} className="text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </TabsContent>
